@@ -17,6 +17,7 @@ const Home = () => {
       <Navbar />
       <Header/>
       <div className="homeContainer">
+      <h1 className="homeTitle">Most popular cities</h1>
         <Featured/>
         <h1 className="homeTitle">Top-rated hotels</h1>
         <PropertyList/>

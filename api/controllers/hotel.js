@@ -92,14 +92,14 @@ export const getHotelRooms = async (req, res, next) => {
         return Room.findById(room);
       })
     );
-    res.status(200).json(list)
+    res.status(200).json(list);
   } catch (err) {
     next(err);
   }
 };
 export const getHotelNames = async (req, res, next) => {
   try {
-    const hotels = await Hotel.find({}, 'name'); // Retrieve only the 'name' field
+    const hotels = await Hotel.find({}, "name"); // Retrieve only the 'name' field
     res.status(200).json(hotels);
   } catch (err) {
     next(err);
@@ -107,38 +107,78 @@ export const getHotelNames = async (req, res, next) => {
 };
 
 // Fetch all rooms with offers and the hotel name
-export const getRoomsWithOffers = async (req, res, next) => {
-  try {
-    const hotels = await Hotel.find().populate("rooms");
-    const roomsWithOffers = [];
+// File: controllers/hotelController.js (أو roomController.js - يفضل تسميته hotelController.js)
 
-    for (const hotel of hotels) {
-      for (const roomId of hotel.rooms) {
-        try {
-          const room = await Room.findById(roomId);
-          if (room && room.offers && room.offers.length > 0) {
-            roomsWithOffers.push({
-              hotelId: hotel._id,
-              hotelName: hotel.name,
-              hotelPhotos:hotel.photos,
-              hotelAddress:hotel.address,
-              hotelDistance:hotel.distance,
-              hotelCheapestPrice:hotel.cheapestPrice,
-              hotelCity:hotel.city,
-              roomTitle:room.title,
-              offerKind:hotel.offers[0].offerKind,
-              ...room._doc
-            });
+
+
+// هذا هو الكنترولر الخاص بك (موجود في مجلد controllers)
+// File: controllers/hotelController.js (أو roomController.js حسب تسميتك)
+
+
+
+export const getOffersData = async (req, res, next) => {
+  try {
+    // جلب كل الفنادق التي لديها عروض رئيسية (مثلاً صيفي، شتوي)
+    // Populate هنا هتجلب فقط الغرف التي تحتوي على عروض وصفية بداخلها
+    const hotelsWithOffers = await Hotel.find({
+      'offers.offerKind': { $exists: true, $ne: null } // تأكد أن الفندق لديه offerKind
+    }).populate({
+      path: 'rooms',    // الحقل الذي يربط الفندق بالغرف
+      model: 'Room',    // موديل الغرفة
+      select: 'title price offers maxPeople desc roomNumbers', // الحقول المطلوبة من الغرفة
+      // هنا هو التعديل الأساسي: قم بفلترة الغرف بحيث تظهر فقط تلك التي لديها عروض وصفية
+      match: { 'offers': { $exists: true, $not: { $size: 0 } } } // الغرفة يجب أن تحتوي على مصفوفة offers غير فارغة
+    });
+
+    const structuredOffersData = [];
+
+    // معالجة البيانات لتجميعها بالشكل المطلوب للواجهة الأمامية.
+    for (const hotel of hotelsWithOffers) {
+      // تأكد أن الفندق مازال يحتوي على غرف بعد عملية الفلترة
+      if (hotel.rooms && hotel.rooms.length > 0) { // هذا الشرط يضمن أن الفندق الذي تم جلبه لديه غرف بعروض
+        // نأخذ نوع العرض الرئيسي من الفندق
+        const hotelOfferKind = hotel.offers[0].offerKind; // نفترض أن offerKind الرئيسي هو في أول عرض للفندق
+
+        // نجمع كل الغرف التابعة لهذا الفندق والتي قد تحتوي على عروض وصفية (تم فلترتها بالفعل في الـ populate)
+        const hotelRoomsWithDescriptiveOffers = [];
+        if (hotel.rooms && hotel.rooms.length > 0) {
+          for (const room of hotel.rooms) {
+            // هذا الشرط إضافي للتأكد، بالرغم من أن populate بـ match يجب أن يكون قد قام بالفلترة
+            if (room.offers && room.offers.length > 0) {
+              hotelRoomsWithDescriptiveOffers.push({
+                roomId: room._id,
+                roomTitle: room.title,
+                roomPrice: room.price,
+                roomMaxPeople: room.maxPeople,
+                roomDescription: room.desc,
+                roomNumbers: room.roomNumbers,
+                roomDescriptiveOffers: room.offers // العروض الوصفية الخاصة بالغرفة
+              });
+            }
           }
-        } catch (error) {
-          console.error(`Error fetching room with ID ${roomId}:`, error);
+        }
+        
+        // فقط أضف الفندق إذا كان لديه غرف بعروض وصفية
+        if (hotelRoomsWithDescriptiveOffers.length > 0) {
+            structuredOffersData.push({
+                hotelId: hotel._id,
+                hotelName: hotel.name,
+                hotelPhotos: hotel.photos,
+                hotelAddress: hotel.address,
+                hotelDistance: hotel.distance,
+                hotelCheapestPrice: hotel.cheapestPrice,
+                hotelCity: hotel.city,
+                offerKind: hotelOfferKind, // نوع العرض الرئيسي من الفندق
+                hotelOffers: hotel.offers, // كل العروض الوصفية اللي على الفندق (لو فيه)
+                roomsWithDescriptiveOffers: hotelRoomsWithDescriptiveOffers // الغرف اللي عليها عروض وصفية من هذا الفندق
+            });
         }
       }
     }
 
-    res.status(200).json(roomsWithOffers);
+    res.status(200).json(structuredOffersData);
   } catch (error) {
-    console.error("Error fetching rooms with offers:", error);
+    console.error("Error fetching offers data:", error);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
@@ -152,7 +192,9 @@ export const getHotelsByType = async (req, res, next) => {
 
     // If no hotels are found, send a 404 response
     if (!hotels.length) {
-      return res.status(404).json({ message: "No hotels found with the specified type" });
+      return res
+        .status(404)
+        .json({ message: "No hotels found with the specified type" });
     }
 
     // Send the found hotels as the response
@@ -162,4 +204,3 @@ export const getHotelsByType = async (req, res, next) => {
     next(error);
   }
 };
-

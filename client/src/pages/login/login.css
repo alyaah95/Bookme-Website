@@ -1,32 +1,47 @@
 .login {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .lContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 300px;
+  /* Set a fixed width (adjust as needed) */
+  min-width: 0;
+  /* Ensures flex children respect overflow */
 }
 
-.lInput{
-    height: 30px;
-    padding: 10px;
+.lInput {
+  height: 30px;
+  padding: 10px;
 }
 
 .lButton {
-    border: none;
-    padding: 10px 20px;
-    background-color: #0071c2;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 5px;
+  border: none;
+  padding: 10px 20px;
+  background-color: #0071c2;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
-.lButton:disabled{
-    background-color: #0071c28c;
-    cursor: not-allowed;
+.lButton:disabled {
+  background-color: #0071c28c;
+  cursor: not-allowed;
+}
+.error-message {
+  color: red;
+  margin-top: 10px;
+  font-size: 14px;
+  word-break: break-word;
+  /* Force text to wrap */
+  overflow-wrap: anywhere;
+  /* Handle long words */
+  white-space: normal;
+  /* Allow wrapping (overrides 'nowrap') */
 }

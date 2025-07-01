@@ -43,7 +43,13 @@ const Contact = () => {
             });
         } catch (err) {
             console.error(err.message);
-            alert('There was an error sending your message. Please try again later.');
+            if (err.message.includes('Cannot read properties of null')){
+                alert('User not found, please login or register first.')
+            }
+            else{
+                alert('There was an error sending your message. Please try again later.');
+            }
+            
         }
     };
 

@@ -30,3 +30,8 @@
     background-color: #0071c28c;
     cursor: not-allowed;
 }
+
+.error-message {
+    color: red;
+    margin-top: 10px;
+    font-size: 14px; }

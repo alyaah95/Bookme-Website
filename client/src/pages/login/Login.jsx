@@ -7,11 +7,11 @@ import "./login.css";
 
 const Login = () => {
     const [credentials, setCredentials] = useState({
-        username: undefined,
-        password: undefined,
+        username: "",
+        password: "",
     });
 
-    const { loading, error, dispatch } = useContext(AuthContext);
+    const { loading, errorL, dispatch } = useContext(AuthContext);
 
     const navigate = useNavigate();
 
@@ -40,6 +40,14 @@ const Login = () => {
     // };
     const handleClick = async (e) => {
         e.preventDefault();
+        if (credentials.username.trim() === "" ) {
+            dispatch({ type: "LOGIN_FAILURE", payload: { message: "Username is reqired, make sure you have filled all fields" } });
+            return;
+          }
+        if (credentials.password.trim() === "" ) {
+            dispatch({ type: "LOGIN_FAILURE", payload: { message: "password is reqired, make sure you have filled all fields" } });
+            return;
+          }
         dispatch({ type: "LOGIN_START" });
         try {
             const res = await axios.post("/auth/login", credentials);
@@ -59,7 +67,7 @@ const Login = () => {
                 </h3>
                 <input
                     type="text"
-                    placeholder="Enter your email address"
+                    placeholder="Enter your username"
                     id="username"
                     onChange={handleChange}
                     className="lInput"
@@ -74,7 +82,10 @@ const Login = () => {
                 <button disabled={loading} onClick={handleClick} className="lButton">
                     Login
                 </button>
-                {error && <span>{error.message}</span>}
+                <button disabled={loading} onClick={() => navigate("/register")} className="lButton">
+                    Sign Up
+                </button>
+                {errorL && <span className="error-message">{errorL.message}</span>}
             </div>
         </div>
 

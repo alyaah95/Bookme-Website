@@ -81,3 +81,52 @@
 .listResult {
   flex: 3;
 }
+
+/* --- No Results Message --- */
+.noResultsMessage {
+  text-align: center;
+  margin-top: 50px;
+  padding: 30px;
+  background-color: #f8f9fa;
+  /* لون خلفية فاتح */
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.noResultsMessage h2 {
+  color: #dc3545;
+  /* لون أحمر عشان يبان إن فيه مشكلة (لا توجد نتائج) */
+  margin-bottom: 15px;
+  font-size: 1.8em;
+}
+
+.noResultsMessage p {
+  color: #555;
+  font-size: 1.1em;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.noResultsMessage a {
+  color: #007bff;
+  /* لون أزرق للرابط */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.noResultsMessage a:hover {
+  text-decoration: underline;
+}
+
+/* Optional: style for loading message */
+.loadingMessage {
+  text-align: center;
+  margin-top: 50px;
+  font-size: 1.5em;
+  color: #007bff;
+  font-weight: bold;
+}

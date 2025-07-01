@@ -9,10 +9,10 @@ import {
   getHotelRooms,
   getHotels,
   getHotelsByType,
-  getRoomsWithOffers,
   updateHotel
 } from "../controllers/hotel.js";
 import { verifyAdmin } from "../utils/verifyToken.js";
+import { getOffersData } from "../controllers/hotel.js"
 const router = express.Router();
 
 //CREATE
@@ -32,8 +32,7 @@ router.get("/countByCity", countByCity);
 router.get("/countByType", countByType);
 router.get("/room/:id", getHotelRooms);
 router.get("/name", getHotelNames);
-// New route to get rooms with offers
-router.get("/roomsWithOffers", getRoomsWithOffers);
+router.get("/offersData", getOffersData);
 router.get("/type/:type", getHotelsByType);
 
 
