@@ -16,7 +16,7 @@ const List = () => {
   const [options, setOptions] = useState(location.state.options);
   const [min, setMin] = useState(undefined);
   const [max, setMax] = useState(undefined);
-  const [hasSearched, setHasSearched] = useState(true);
+  /*const [hasSearched, setHasSearched] = useState(true);*/
 
   const formatCityName = (value) => {
     const trimmedValue = value.trim();

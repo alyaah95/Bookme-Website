@@ -1,6 +1,6 @@
 // File: src/pages/offers/AvailableCitiesPage.jsx
 
-import React, { useEffect } from 'react'; // أضفنا useEffect
+import React, { useEffect, useState } from 'react'; // أضفنا useEffect
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from "../../components/navbar/Navbar";
 import Header from "../../components/header/Header";
@@ -12,10 +12,13 @@ const AvailableCitiesPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   // Get data from location.state first
-  let { offerType, cities } = location.state || {}; 
+  //let { offerType, cities } = location.state || {}; 
+  
+const [cities, setCities] = useState(location.state?.cities || []);
+const [offerType, setOfferType] = useState(location.state?.offerType || "");
 
   // هذا هو التعديل الجديد: استعادة البيانات من sessionStorage إذا لم تكن موجودة
-  useEffect(() => {
+  /*useEffect(() => {
     if (!offerType || !cities || cities.length === 0) {
       try {
         const storedCitiesData = sessionStorage.getItem('availableCitiesData');
@@ -44,7 +47,25 @@ const AvailableCitiesPage = () => {
         navigate('/offers'); // Fallback to main offers page on error
       }
     }
-  }, [offerType, cities, navigate]); // أضفنا offerType, cities, navigate كتوابع لـ useEffect
+  }, [offerType, cities, navigate]); // أضفنا offerType, cities, navigate كتوابع لـ useEffect */
+  useEffect(() => {
+    if (!offerType || cities.length === 0) {
+      try {
+        const storedCitiesData = sessionStorage.getItem('availableCitiesData');
+        const storedOfferType = sessionStorage.getItem('selectedOfferType');
+
+        if (storedCitiesData && storedOfferType) {
+          setCities(JSON.parse(storedCitiesData));
+          setOfferType(storedOfferType);
+        } else {
+          navigate('/offers');
+        }
+      } catch (e) {
+        console.error("Error parsing sessionStorage data:", e);
+        navigate('/offers');
+      }
+    }
+  }, [offerType, cities.length, navigate]);
 
   // Handle cases where no data is passed or cities array is empty
   // (هذا الشرط الآن سيعالج البيانات سواء من location.state أو من sessionStorage)
