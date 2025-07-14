@@ -15,17 +15,22 @@ const Datatable = ({ columns }) => {
     setList(data);
   }, [data]);
 
-  const handleRoomDelete = async (id) => {
-    try {
-      const response = await axios.get(`rooms/${id}/hotel`);
-      const hotelId = response.data;
-        
-      await axios.delete(`/${path}/${id}/${hotelId}`);
-      setList(list.filter((item) => item._id !== id));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+const handleRoomDelete = async (id) => {
+  try {
+    const response = await axios.get(`/rooms/${id}/hotel`);
+    const hotelId = response.data.hotelId;
+
+    console.log("Deleting room:", id);
+    console.log("Hotel ID:", hotelId);
+
+    await axios.delete(`/rooms/${id}/${hotelId}`);
+    setList(list.filter((item) => item._id !== id));
+  } catch (err) {
+    console.error("Delete failed:", err);
+  }
+};
+
+
 
   const handleDelete = async (id) => {
     try {

@@ -147,17 +147,22 @@ export const deleteDatesFromRooms = async (req, res, next) => {
     next(err);
   }
 };
-export const getHotelIdByRoomId=async(req,res,next)=> {
-  const roomId=req.params.id;
+export const getHotelIdByRoomId = async (req, res, next) => {
+  const roomId = req.params.id;
   try {
     const room = await Room.findById(roomId);
     if (!room) {
-      throw new Error('Room not found');
+      return res.status(404).json({ message: "Room not found" });
     }
-    // Assuming each room has a hotelId field pointing to the hotel it belongs to
-    res.status(200).json(room.hotelId);
+
+    if (!room.hotelId) {
+      return res.status(400).json({ message: "Hotel ID not found for this room" });
+    }
+
+    res.status(200).json({ hotelId: room.hotelId }); // ✅ send as object
   } catch (error) {
-    console.error('Error fetching hotel ID:', error.message);
-    throw error;
+    console.error("Error fetching hotel ID:", error.message);
+    next(error);
   }
-}
+};
+
