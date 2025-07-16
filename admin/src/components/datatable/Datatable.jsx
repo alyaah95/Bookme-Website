@@ -68,20 +68,39 @@ const Datatable = ({ columns, listType }) => { // 🚀 تمت إضافة listTyp
     fetchAdminData();
   }, [path, page, pageSize]); // 🚀 إعادة الجلب كلما تغير الـ path أو الصفحة الحالية أو حجم الصفحة
 
-  const handleRoomDelete = async (id) => {
-    try {
-      // 🚀 هنا أيضاً تم تعديل استدعاء الـ API ليناسب الهيكل الجديد بدون تكرار /api/
-      const response = await API.get(`rooms/hotelId/${id}`); // 🚀🗑️ تم التعديل
-      const hotelId = response.data; 
 
-      // 🚀 تم تعديل مسار الحذف أيضاً
-      await API.delete(`/${path}/${id}/${hotelId}`); // 🚀🗑️ تم التعديل
-      setData(data.filter((item) => item._id !== id)); 
-      setRowCount((prev) => prev - 1); 
-    } catch (err) {
-      console.error("Error deleting room:", err);
-    }
-  };
+  // const handleRoomDelete = async (id) => {
+  //   try {
+  //     // 🚀 هنا أيضاً تم تعديل استدعاء الـ API ليناسب الهيكل الجديد بدون تكرار /api/
+  //     const response = await API.get(`rooms/hotelId/${id}`); // 🚀🗑️ تم التعديل
+  //     const hotelId = response.data; 
+
+  //     // 🚀 تم تعديل مسار الحذف أيضاً
+  //     await API.delete(`/${path}/${id}/${hotelId}`); // 🚀🗑️ تم التعديل
+  //     setData(data.filter((item) => item._id !== id)); 
+  //     setRowCount((prev) => prev - 1); 
+  //   } catch (err) {
+  //     console.error("Error deleting room:", err);
+  //   }
+  // };
+
+const handleRoomDelete = async (id) => {
+  try {
+    const response = await axios.get(`/rooms/${id}/hotel`);
+    const hotelId = response.data.hotelId;
+
+    console.log("Deleting room:", id);
+    console.log("Hotel ID:", hotelId);
+
+    await axios.delete(`/rooms/${id}/${hotelId}`);
+    setList(list.filter((item) => item._id !== id));
+  } catch (err) {
+    console.error("Delete failed:", err);
+  }
+};
+
+
+
 
   const handleDelete = async (id) => {
     try {
