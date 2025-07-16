@@ -25,7 +25,10 @@ mongoose.connection.on("disconnected", () => {
 });
 
 //middlewares
-app.use(cors())
+app.use(cors({
+  origin: "http://localhost:3000", // 🚀 ده لازم يكون الـ Origin بتاع الـ Frontend بتاعك
+  credentials: true,               // 🚀 ده لازم يكون True عشان تسمحي باستقبال الـ Cookies
+}));
 app.use(cookieParser())
 app.use(express.json());
 

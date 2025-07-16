@@ -51,6 +51,41 @@ export const getHotels = async (req, res, next) => {
     next(err);
   }
 };
+
+// 🚀 New function for Admin Dashboard - getAdminHotels with pagination
+export const getAdminHotels = async (req, res, next) => {
+  const limit = parseInt(req.query.limit) || 10; // 🚀 Default limit for admin view
+  const page = parseInt(req.query.page) || 1;   // 🚀 Default page for admin view
+  const skip = (page - 1) * limit;            // 🚀 Calculate skip for pagination
+
+  const { min, max, ...others } = req.query; // You might still want filtering for admin
+
+  try {
+    const query = {
+      ...others,
+      cheapestPrice: { $gt: min || 1, $lt: max || 9999 },
+    };
+
+    const totalCount = await Hotel.countDocuments(query); // 🚀 Get total count for frontend pagination
+
+    const hotels = await Hotel.find(query)
+      .skip(skip)   // 🚀 Apply skip for pagination
+      .limit(limit); // 🚀 Apply limit for pagination
+
+    // 🚀 Return total count, page, and limit along with hotels
+    res.status(200).json({
+      total: totalCount,
+      page: page,
+      limit: limit,
+      hotels: hotels
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+
 export const countByCity = async (req, res, next) => {
   const cities = req.query.cities.split(",");
   try {

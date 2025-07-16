@@ -1,10 +1,11 @@
-import axios from 'axios';
+// import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import List from "../../components/table/Table";
 import "./single.scss";
+import API from "../../api/axiosInstance";
 
 const Single = () => {
   const { userId } = useParams(); 
@@ -16,7 +17,7 @@ const Single = () => {
     const GetUser = async () => {
       setLoading(true); // Set loading state to true before fetching data
       try {
-        const response = await axios.get(`http://localhost:8800/api/users/${userId}`);
+        const response = await API.get(`http://localhost:8800/api/users/${userId}`);
         setUser(response.data);
         setLoading(false); // Set loading state to false after successful data fetch
       } catch (err) {

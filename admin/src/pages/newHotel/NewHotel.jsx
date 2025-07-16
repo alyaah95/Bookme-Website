@@ -5,6 +5,7 @@ import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { hotelInputs } from "../../formSource";
 import "./newHotel.scss";
+import API from "../../api/axiosInstance";
 
 const NewHotel = () => {
   const [successMessage, setSuccessMessage] = useState("");
@@ -51,7 +52,7 @@ const NewHotel = () => {
         photos: list,
       };
 
-      await axios.post("/hotels", newhotel);
+      await API.post("/hotels", newhotel);
       console.log(newhotel);
 
       // Clear the form and show success message

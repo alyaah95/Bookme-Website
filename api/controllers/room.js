@@ -80,6 +80,31 @@ export const getRooms = async (req, res, next) => {
   }
 };
 
+// 🚀 New function for Admin Dashboard - getAdminRooms with pagination
+export const getAdminRooms = async (req, res, next) => {
+  const limit = parseInt(req.query.limit) || 10; // 🚀 Default limit for admin view
+  const page = parseInt(req.query.page) || 1;   // 🚀 Default page for admin view
+  const skip = (page - 1) * limit;            // 🚀 Calculate skip for pagination
+
+  try {
+    const totalCount = await Room.countDocuments({}); // 🚀 Get total count for frontend pagination
+    const rooms = await Room.find({})
+      .skip(skip)   // 🚀 Apply skip for pagination
+      .limit(limit); // 🚀 Apply limit for pagination
+
+    // 🚀 Return total count, page, and limit along with rooms
+    res.status(200).json({
+      total: totalCount,
+      page: page,
+      limit: limit,
+      rooms: rooms
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 export const getRoomsByIds = async (req, res, next) => {
   try {
     const roomIds = req.body.roomIds; // Assuming the array of room IDs is passed in the request body

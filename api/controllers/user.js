@@ -38,6 +38,31 @@ export const getUsers = async (req, res, next) => {
   }
 };
 
+// 🚀 New function for Admin Dashboard - getAdminUsers with pagination
+export const getAdminUsers = async (req, res, next) => {
+  const limit = parseInt(req.query.limit) || 10; // 🚀 Default limit for admin view
+  const page = parseInt(req.query.page) || 1;   // 🚀 Default page for admin view
+  const skip = (page - 1) * limit;            // 🚀 Calculate skip for pagination
+
+  try {
+    const totalCount = await User.countDocuments({}); // 🚀 Get total count for frontend pagination
+    const users = await User.find({})
+      .skip(skip)   // 🚀 Apply skip for pagination
+      .limit(limit); // 🚀 Apply limit for pagination
+
+    // 🚀 Return total count, page, and limit along with users
+    res.status(200).json({
+      total: totalCount,
+      page: page,
+      limit: limit,
+      users: users
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 export const createUsers = async (req, res) => {
   try {
     // 1. Hash the password for security
@@ -175,16 +200,18 @@ export const addCurrentBookingToUser = async (req, res, next) => {
     next(error);
   }
 };
+// 🚀 Modified addHistoryBookingToUser - using $addToSet for better performance and to prevent duplicates
 export const addHistoryBookingToUser = async (req, res, next) => {
   const userId = req.params.id;
   const bookingCard = req.body.bookingCard;
 
   try {
-    // Find the user by ID and update their HistoryBookings array
+    // 🚀 Using $addToSet to add the booking card only if its _id is not already present
+    // This is more efficient and prevents duplicates directly in MongoDB
     let user = await User.findByIdAndUpdate(
       userId,
       {
-        $push: { HistoryBookings: bookingCard },
+        $addToSet: { HistoryBookings: bookingCard }, // 🚀 Adds the booking if _id is unique
       },
       { new: true }
     );
@@ -192,24 +219,6 @@ export const addHistoryBookingToUser = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-
-    // Loop through the user's HistoryBookings to remove duplicate bookings
-    const uniqueHistoryBookings = [];
-    const existingIds = new Set();
-
-    for (const booking of user.HistoryBookings.reverse()) {
-      if (!existingIds.has(booking._id)) {
-        uniqueHistoryBookings.push(booking);
-        existingIds.add(booking._id);
-      }
-    }
-
-    // Update user's HistoryBookings array with unique bookings
-    user = await User.findByIdAndUpdate(
-      userId,
-      { HistoryBookings: uniqueHistoryBookings },
-      { new: true }
-    );
 
     res.status(200).json({ message: "Booking added successfully", user });
   } catch (error) {
@@ -235,6 +244,36 @@ export const getUserHistoryBookings = async (req, res, next) => {
     res.status(200).json(historyBookings);
   } catch (err) {
     // If any error occurs, pass it to the error handler middleware
+    next(err);
+  }
+};
+
+// 🚀 New function for Admin Dashboard - getAdminUserHistoryBookings with pagination
+export const getAdminUserHistoryBookings = async (req, res, next) => {
+  const userId = req.params.id;
+  const limit = parseInt(req.query.limit) || 10;
+  const page = parseInt(req.query.page) || 1;
+  const skip = (page - 1) * limit;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const historyBookings = user.HistoryBookings;
+    const totalCount = historyBookings.length; // 🚀 Get total count from the array length
+
+    // 🚀 Manually paginate the array in Node.js (for nested arrays like this)
+    const paginatedBookings = historyBookings.slice(skip, skip + limit);
+
+    res.status(200).json({
+      total: totalCount,
+      page: page,
+      limit: limit,
+      bookings: paginatedBookings
+    });
+  } catch (err) {
     next(err);
   }
 };

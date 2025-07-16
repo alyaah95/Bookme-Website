@@ -9,7 +9,8 @@ import {
   getHotelRooms,
   getHotels,
   getHotelsByType,
-  updateHotel
+  updateHotel,
+  getAdminHotels
 } from "../controllers/hotel.js";
 import { verifyAdmin } from "../utils/verifyToken.js";
 import { getOffersData } from "../controllers/hotel.js"
@@ -34,6 +35,8 @@ router.get("/room/:id", getHotelRooms);
 router.get("/name", getHotelNames);
 router.get("/offersData", getOffersData);
 router.get("/type/:type", getHotelsByType);
+
+router.get("/admin", getAdminHotels);
 
 
 

@@ -5,6 +5,7 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import { roomInputs } from "../../formSource";
 import useFetch from "../../hooks/useFetch";
 import "./newRoom.scss";
+import API from "../../api/axiosInstance";
 
 const NewRoom = () => {
   const [successMessage, setSuccessMessage] = useState("");
@@ -41,7 +42,7 @@ const NewRoom = () => {
 
     const roomNumbers = rooms.split(",").map((room) => ({ number: room }));
     try {
-      await axios.post(`/rooms/${hotelId}`, { ...info, roomNumbers, hotelId });
+      await API.post(`/rooms/${hotelId}`, { ...info, roomNumbers, hotelId });
       // Clear the form and show success message
       setInfo({}); // Reset the info state
       setHotelId("");

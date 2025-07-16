@@ -4,6 +4,7 @@ import { useState } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import "./new.scss";
+import API from "../../api/axiosInstance";
 
 const New = ({ inputs, title }) => {
   const [file, setFile] = useState(null);
@@ -43,7 +44,7 @@ const New = ({ inputs, title }) => {
           img: url,
         };
 
-        await axios.post("/auth/register", newUser);
+        await API.post("/auth/register", newUser);
 
         // Clear the form and show success message
         setFile(null);
@@ -66,7 +67,7 @@ const New = ({ inputs, title }) => {
       };
 
       try {
-        await axios.post("/auth/register", newUser);
+        await API.post("/auth/register", newUser);
 
         // Clear the form and show success message
         setFile(null);
