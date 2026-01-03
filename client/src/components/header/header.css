@@ -36,7 +36,8 @@
   }
   
   .headerDesc {
-    margin: 20px 0px;
+    margin-top: 20px;
+    color: white;
   }
   
   .headerBtn {
@@ -45,6 +46,7 @@
     font-weight: 500;
     border: none;
     padding: 10px;
+    margin : 10px;
     cursor: pointer;
   }
   

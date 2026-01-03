@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import "./currentBookings.css";
+import api from '../../utils/api';
 
 const CurrentBookings = () => {
     const { user } = useContext(AuthContext);
@@ -25,44 +26,33 @@ const CurrentBookings = () => {
 
     const removeCurrentBookingFromUser = async (bookingId) => {
         try {
-            const response = await fetch(`http://localhost:8800/api/users/${userId}/currentbookings`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ bookingId: bookingId }),
+            // نرسل فقط المسار المتغير، الـ Base URL هيضاف تلقائياً
+            const response = await api.delete(`/users/${userId}/currentbookings`, {
+                data: { bookingId: bookingId } 
             });
 
-            if (!response.ok) {
-                const errorMessage = await response.text();
-                throw new Error(errorMessage || 'Failed to remove booking');
-            }
-
-            return await response.json();
+            // Axios يعيد البيانات جاهزة في response.data ولا نحتاج response.json()
+            return response.data;
         } catch (error) {
-            console.error(error);
-            throw error;
+            // التعامل مع الخطأ بشكل احترافي
+            const message = error.response?.data?.message || 'Failed to remove booking';
+            console.error("Delete Booking Error:", message);
+            throw new Error(message);
         }
     };
 
     const deleteDatesFromRooms = async (roomDetails, dates) => {
         try {
-            const response = await fetch('http://localhost:8800/api/rooms/deletecanceledAvailability', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ roomDetails, dates }),
+            const response = await api.delete('/rooms/deletecanceledAvailability', {
+                data: { roomDetails, dates }
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to delete dates from rooms');
-            }
-
-            const data = await response.json();
-            console.log(data); // Output: 'Selected dates have been deleted from room availability.'
+            console.log(response.data); // Output: 'Selected dates have been deleted...'
+            return response.data;
         } catch (error) {
-            console.error('Error deleting dates from rooms:', error.message);
+            const message = error.response?.data?.message || 'Failed to delete dates from rooms';
+            console.error('Error deleting dates:', message);
+            throw new Error(message);
         }
     };
 
@@ -80,20 +70,24 @@ const CurrentBookings = () => {
     };
 
     useEffect(() => {
+        // يفضل دائماً تعريف الدالة داخل الـ useEffect لو مش هتستخدميها بره
         const fetchcurrentBookings = async () => {
             try {
-                const response = await fetch(`http://localhost:8800/api/users/${userId}/currentBookings`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch current bookings');
-                }
-                const data = await response.json();
-                setCurrentBookings(data);
+                // باستخدام axios instance (api)
+                const response = await api.get(`/users/${userId}/currentBookings`);
+                
+                // Axios بيعمل JSON.parse تلقائياً، الداتا موجودة في response.data
+                setCurrentBookings(response.data);
             } catch (error) {
-                console.error('Error fetching current bookings:', error.message);
+                // سحب رسالة الخطأ من السيرفر لو موجودة، وإلا عرض رسالة افتراضية
+                const errorMsg = error.response?.data?.message || 'Failed to fetch current bookings';
+                console.error('Error fetching current bookings:', errorMsg);
             }
         };
 
-        fetchcurrentBookings();
+        if (userId) {
+            fetchcurrentBookings();
+        }
     }, [userId]);
 
     return (

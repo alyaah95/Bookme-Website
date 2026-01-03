@@ -13,7 +13,9 @@ import {
   getUserReviews,
   getUsers,
   removeCurrentBookingFromUser,
-  updateUser
+  updateUser,
+  getAdminUsers,
+   getAdminUserHistoryBookings
 } from "../controllers/user.js";
 
 import { verifyUser } from "../utils/verifyToken.js";
@@ -36,11 +38,14 @@ router.post("/register", createUsers);
 // })
 
 //UPDATE
-router.put("/:id", updateUser);
+router.put("/:id", verifyUser, updateUser);
 
 //DELETE
 router.delete("/:id", verifyUser, deleteUser);
 
+router.get("/admin", getAdminUsers); // 🚀 New endpoint for admin users list
+router.get("/:id/adminHistoryBookings", getAdminUserHistoryBookings); // 🚀 New endpoint for admin user history bookings
+ 
 //GET
 router.get("/:id", getUser);
 
@@ -63,6 +68,8 @@ router.get("/:id/historybookings",getUserHistoryBookings);
 
 router.post('/:id/messages',addMessageToUser);
 router.get('/:id/messages',getUserMessages);
+
+
 
 
 

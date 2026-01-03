@@ -1,4 +1,5 @@
 import axios from "axios";
+import api from "../../utils/api";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
@@ -13,11 +14,9 @@ const Register = () => {
     country:"",
     city:"",
     phone:"",
-    img:""
-    // Add other necessary fields for registration
   });
 
-  const { loading, error, dispatch } = useContext(AuthContext);
+  const { loading, errorR, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -28,6 +27,35 @@ const Register = () => {
     e.preventDefault();
 
     // Check if passwords match
+    
+    if (credentials.username.trim() === "" ) {
+      dispatch({ type: "REGISTER_FAILURE", payload: { message: "Username is reqired, make sure you have filled all fields" } });
+      return;
+    }
+    if (credentials.email.trim() === "" ) {
+      dispatch({ type: "REGISTER_FAILURE", payload: { message: "email is reqired, make sure you have filled all fields" } });
+      return;
+    }
+    if (credentials.password.trim() === "" ) {
+      dispatch({ type: "REGISTER_FAILURE", payload: { message: "password is reqired, make sure you have filled all fields" } });
+      return;
+    }
+    if (credentials.repassword.trim() === "" ) {
+      dispatch({ type: "REGISTER_FAILURE", payload: { message: "you have to repeat password, make sure you have filled all fields" } });
+      return;
+    }
+    if (credentials.country.trim() === "" ) {
+      dispatch({ type: "REGISTER_FAILURE", payload: { message: "country is reqired, make sure you have filled all fields" } });
+      return;
+    }
+    if (credentials.city.trim() === "" ) {
+      dispatch({ type: "REGISTER_FAILURE", payload: { message: "city is reqired, make sure you have filled all fields" } });
+      return;
+    }
+    if (credentials.phone.trim() === "" ) {
+      dispatch({ type: "REGISTER_FAILURE", payload: { message: "phone is reqired, make sure you have filled all fields" } });
+      return;
+    }
     if (credentials.password !== credentials.repassword) {
       dispatch({ type: "REGISTER_FAILURE", payload: { message: "Passwords do not match" } });
       return;
@@ -35,17 +63,31 @@ const Register = () => {
 
     dispatch({ type: "REGISTER_START" });
     try {
-      const res = await axios.post("/auth/register", credentials);
+      const res = await api.post("/auth/register", credentials);
       dispatch({ type: "REGISTER_SUCCESS", payload: res.data.details });
       // Redirect to login page after successful registration
       navigate("/login");
     } catch (err) {
-      dispatch({ type: "REGISTER_FAILURE", payload: err.response.data });
+      const searchUsername = ["duplicate key","username"]
+      const findUsername = searchUsername.every(subString => err.response.data.message.includes(subString))
+      const searchEmail = ["duplicate key","email"]
+      const findEmail = searchEmail.every(subString => err.response.data.message.includes(subString))
+      
+      if (findUsername) {
+        dispatch({ type: "REGISTER_FAILURE", payload: {message: "Username already exists"} });
+      }
+      else if (findEmail){
+        dispatch({ type: "REGISTER_FAILURE", payload: {message: "Email already exists"} });
+      }
+      
+      console.log(err.response.data.message);
+      
     }
   };
 
   return (
     <div className="register">
+      
       <div className="rContainer">
         <input
           type="text"
@@ -103,7 +145,7 @@ const Register = () => {
         <button disabled={loading} onClick={handleClick} className="rButton">
           Register
         </button>
-        {error && <span>{error.message}</span>}
+        {errorR && <span className="error-message">{errorR.message}</span>}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { hotelInputs } from "../../formSource";
 import "./newHotel.scss";
+import API from "../../api/axiosInstance";
 
 const NewHotel = () => {
   const [successMessage, setSuccessMessage] = useState("");
@@ -12,6 +13,7 @@ const NewHotel = () => {
   const [files, setFiles] = useState("");
   const [info, setInfo] = useState({});
   const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
@@ -19,17 +21,36 @@ const NewHotel = () => {
 
   const handleClick = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
-    // Validate that all required fields are filled
-    const requiredFields = [...hotelInputs.map((input) => input.id)];
-    const emptyFields = requiredFields.filter((field) => !info[field]);
+    // 1. التأكد من الصور (على الأقل صورة واحدة)
+    if (!files || files.length === 0) {
+      setErrorMessage("Please upload at least one image.");
+      setLoading(false);
+      return;
+    }
 
-    if (emptyFields.length > 0) {
-      setErrorMessage("Please fill in all the fields.");
+    // 2. التأكد من كل الحقول
+    const requiredFields = hotelInputs.map((input) => input.id);
+    const isAnyFieldEmpty = requiredFields.some((field) => !info[field]);
+
+    if (isAnyFieldEmpty) {
+      setErrorMessage("All text fields are required.");
+      setLoading(false);
+      return;
+    }
+
+    // 3. التأكد إن السعر رقم موجب
+    if (info.cheapestPrice && isNaN(info.cheapestPrice) || info.cheapestPrice <= 0) {
+      setErrorMessage("Price must be a valid positive number.");
+      setLoading(false);
       return;
     }
 
     try {
+      // رفع الصور (الكود بتاعك ممتاز هنا)
       const list = await Promise.all(
         Object.values(files).map(async (file) => {
           const data = new FormData();
@@ -39,9 +60,7 @@ const NewHotel = () => {
             "https://api.cloudinary.com/v1_1/dqfvmwrye/image/upload",
             data
           );
-
-          const { url } = uploadRes.data;
-          return url;
+          return uploadRes.data.url;
         })
       );
 
@@ -49,14 +68,16 @@ const NewHotel = () => {
         ...info,
         rooms,
         photos: list,
+        // تحويل السعر لرقم لضمان عدم حدوث مشاكل في البحث
+        cheapestPrice: Number(info.cheapestPrice), 
       };
 
-      await axios.post("/hotels", newhotel);
-      console.log(newhotel);
-
-      // Clear the form and show success message
-      setFiles("");
+      await API.post("/hotels", newhotel);
+      setSuccessMessage("Hotel added successfully!");
+      
+      // تنظيف الفورم
       setInfo({});
+      setFiles("");
       setRooms([]);
       setSuccessMessage("Hotel added successfully!");
       setErrorMessage(""); // Clear error message
@@ -74,6 +95,9 @@ const NewHotel = () => {
       document.getElementById("rooms").selectedIndex = -1;
     } catch (err) {
       console.log(err);
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -122,7 +146,13 @@ const NewHotel = () => {
                   />
                 </div>
               ))}
-              <button onClick={handleClick}>Send</button>
+              <button 
+                disabled={loading} 
+                onClick={handleClick} 
+                style={{ cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
+              >
+                {loading ? "Uploading... Please wait" : "Send"}
+              </button>
             </form>
             {errorMessage && <p className="errorMessage">{errorMessage}</p>}
             {successMessage && <p className="successMessage">{successMessage}</p>}

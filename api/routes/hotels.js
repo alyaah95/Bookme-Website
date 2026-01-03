@@ -9,10 +9,12 @@ import {
   getHotelRooms,
   getHotels,
   getHotelsByType,
-  getRoomsWithOffers,
-  updateHotel
+  updateHotel,
+  getAdminHotels,
+  createPaymentIntent,
 } from "../controllers/hotel.js";
 import { verifyAdmin } from "../utils/verifyToken.js";
+import { getOffersData } from "../controllers/hotel.js"
 const router = express.Router();
 
 //CREATE
@@ -22,8 +24,9 @@ router.post("/", verifyAdmin, createHotel);
 router.put("/:id", verifyAdmin, updateHotel);
 //DELETE
 router.delete("/:id", verifyAdmin, deleteHotel);
-//GET
 
+router.get("/admin", getAdminHotels);
+//GET
 router.get("/find/:id", getHotel);
 //GET ALL
 
@@ -32,9 +35,11 @@ router.get("/countByCity", countByCity);
 router.get("/countByType", countByType);
 router.get("/room/:id", getHotelRooms);
 router.get("/name", getHotelNames);
-// New route to get rooms with offers
-router.get("/roomsWithOffers", getRoomsWithOffers);
+router.get("/offersData", getOffersData);
 router.get("/type/:type", getHotelsByType);
+
+
+router.post("/payment", createPaymentIntent);
 
 
 

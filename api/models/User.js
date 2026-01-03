@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 const UserSchema = new mongoose.Schema(
   {
     username: {
@@ -30,14 +31,6 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    reviews:[{
-      userId:{type:String},
-      hotelId:{type:String},
-      date:{type:String},
-      hotelName: {type:String},
-      rating: {type:Number},
-      comment: {type:String}
-    }],
     CurrentBookings:[{
         fromDate: {type:String},
         toDate: {type:String},
@@ -63,9 +56,26 @@ const UserSchema = new mongoose.Schema(
       email: { type: String, required: true },
       message: { type: String, required: true },
       date: { type: Date, default: Date.now }
-    }]
+    }],
+    resetOTP: { type: String },
+    resetOTPExpires: { type: Date },
   },
   { timestamps: true }
 );
+UserSchema.pre("save", async function (next) {
+  // لو الباسوورد متعدلش (مثلاً المستخدم غير رقم تليفونه بس)، كمل عادي
+  if (!this.isModified("password") || !this.password) {
+    return next();
+  }
+
+  // لو الباسوورد جديد أو اتعدل، شفره
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default mongoose.model("User", UserSchema);

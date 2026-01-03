@@ -1,12 +1,19 @@
 import { createContext, useReducer } from "react";
+import { addDays } from "date-fns";
 
 const INITIAL_STATE = {
   city: undefined,
-  dates: [],
+  dates: [ // هنا التعديل
+    {
+      startDate: new Date(),
+      endDate: addDays(new Date(), 1), // تاريخ اليوم التالي
+      key: "selection",
+    },
+  ],
   options: {
-    adult: undefined,
-    children: undefined,
-    room: undefined,
+    adult: undefined, // ممكن تحطي قيمة افتراضية هنا برضه لو عايزة، مثلاً 1
+    children: undefined, // أو 0
+    room: undefined,     // أو 1
     type:undefined
   }
 };

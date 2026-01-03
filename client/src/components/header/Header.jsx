@@ -137,7 +137,10 @@ const Header = ({ type }) => {
               Get rewarded for your travels – unlock instant savings of 10% or
               more with a free Book Me account
             </p>
-            {!user && <button className="headerBtn">Sign in / Register</button>}
+
+            {!user && <button className="headerBtn" onClick={() => navigate("/register")}>Register</button>}
+            {!user && <button className="headerBtn" onClick={() => navigate("/login")}>Login in </button>}
+            
             <div className="headerSearch">
               <div className="headerSearchItem">
                 <FontAwesomeIcon icon={faBed} className="headerIcon" />
@@ -145,7 +148,23 @@ const Header = ({ type }) => {
                   type="text"
                   placeholder="Where are you going?"
                   className="headerSearchInput"
-                  onChange={(e) => setDestination(e.target.value)}
+                  onChange={(e) => {
+                    // جلب القيمة المدخلة من حقل البحث
+                    const inputValue = e.target.value;
+                
+                    // 1. إزالة المسافات الزائدة من البداية والنهاية
+                    const trimmedValue = inputValue.trim();
+                
+                    // 2. تقسيم النص إلى كلمات بناءً على المسافات، ثم تحويل الحرف الأول من كل كلمة إلى كابيتال
+                    // 3. إعادة تجميع الكلمات بدون مسافات إضافية بينها
+                    const formattedDestination = trimmedValue
+                        .split(/\s+/) // تقسيم النص عند وجود مسافة واحدة أو أكثر
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // تحويل أول حرف لكابيتال والباقي سمول
+                        .join(' '); // تجميع الكلمات بمسافة واحدة بينها
+                
+                    // تحديث حالة الـ destination بالقيمة المنسقة
+                    setDestination(formattedDestination);
+                }}
                 />
               </div>
               <div className="headerSearchItem">

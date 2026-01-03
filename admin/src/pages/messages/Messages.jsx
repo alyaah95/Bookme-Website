@@ -1,9 +1,10 @@
-import axios from 'axios';
+// import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import './messages.scss';
+import API from "../../api/axiosInstance";
 
 const Messages = () => {
   const { userId } = useParams(); // Assuming userId is obtained from route params
@@ -15,7 +16,7 @@ const Messages = () => {
     const fetchUserMessages = async () => {
       setLoading(true); // Set loading state to true before fetching data
       try {
-        const response = await axios.get(`http://localhost:8800/api/users/${userId}/messages`);
+        const response = await API.get(`/users/${userId}/messages`);
         setMessages(response.data);
         setLoading(false); // Set loading state to false after successful data fetch
       } catch (err) {

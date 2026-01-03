@@ -1,52 +1,180 @@
 import { DataGrid } from "@mui/x-data-grid";
-import axios from "axios";
+// import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import useFetch from "../../hooks/useFetch";
+// 🗑️ No longer need useFetch hook as we'll handle fetching directly with axios for pagination
+// import useFetch from "../../hooks/useFetch"; // هذا السطر يمكن حذفه إذا لم يستخدم في أي مكان آخر
+import API from "../../api/axiosInstance";
+import UpdateModal from "../updateModal/UpdateModal";
+import Swal from 'sweetalert2';
 import "./datatable.scss";
 
-const Datatable = ({ columns }) => {
+// 🚀 The 'columns' prop is crucial here, and we'll add a 'listType' prop
+const Datatable = ({ columns, listType }) => { // 🚀 تمت إضافة listType لتحديد نوع البيانات (فنادق، غرف، مستخدمين)
   const location = useLocation();
-  const path = location.pathname.split("/")[1];
-  const [list, setList] = useState([]);
-  const { data } = useFetch(`/${path}`);
+  const path = location.pathname.split("/")[1]; // على سبيل المثال: "hotels", "rooms", "users"
 
+  // 🚀 حالات للتحكم في الـ pagination والبيانات
+  const [data, setData] = useState([]); // 🚀 تم تغيير اسم 'list' إلى 'data' لتوضيح التوافق مع DataGrid
+  const [loading, setLoading] = useState(true); // 🚀 الحالة الأولية للتحميل
+  const [error, setError] = useState(null); // 🚀 حالة الأخطاء
+  const [page, setPage] = useState(0); // 🚀 DataGrid يستخدم فهرس الصفحة يبدأ من 0
+  const [pageSize, setPageSize] = useState(9); // 🚀 حجم الصفحة الأولي، متوافق مع pageSize الحالي لديكِ
+  const [rowCount, setRowCount] = useState(0); // 🚀 العدد الإجمالي للصفوف من الـ backend
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  // 🗑️ تم حذف استخدام useFetch الأصلي ودالة useEffect التي تعتمد عليه
+  // const { data } = useFetch(`/${path}`);
+  // useEffect(() => {
+  //   setList(data);
+  // }, [data]);
+
+  // 🚀 دالة useEffect جديدة لجلب البيانات مع pagination للوحة تحكم الأدمن
   useEffect(() => {
-    setList(data);
-  }, [data]);
+    const fetchAdminData = async () => {
+      setLoading(true); // 🚀 تعيين حالة التحميل إلى true قبل جلب البيانات
+      setError(null);   // 🚀 مسح أي أخطاء سابقة
 
-  const handleRoomDelete = async (id) => {
-    try {
-      const response = await axios.get(`rooms/${id}/hotel`);
-      const hotelId = response.data;
-        
-      await axios.delete(`/${path}/${id}/${hotelId}`);
-      setList(list.filter((item) => item._id !== id));
-    } catch (err) {
-      console.error(err);
-    }
+      try {
+        // 🚀 بناء مسار الـ endpoint الخاص بالأدمن
+        // هنا التغيير الرئيسي: تم إزالة `/api/` من بداية الـ URL
+        const apiUrl = `/${path}/admin?page=${page + 1}&limit=${pageSize}`; // 🚀🗑️ تم التعديل من `/api/${path}/admin` إلى `/${path}/admin`
+        const res = await API.get(apiUrl);
+
+        // 🚀 تحديث البيانات، العدد الإجمالي، وإعادة تعيين حالة التحميل
+        if (path === "hotels") {
+          setData(res.data.hotels);
+          setRowCount(res.data.total);
+        } else if (path === "rooms") {
+          setData(res.data.rooms);
+          setRowCount(res.data.total);
+        } else if (path === "users") {
+          setData(res.data.users);
+          
+          setRowCount(res.data.total);
+        } else {
+            // 🚀 إجراء احتياطي لأي أنواع أخرى، على الرغم من أن هذه هي الأنواع الرئيسية الثلاثة
+            setData(res.data);
+            setRowCount(res.data.length); 
+        }
+      } catch (err) {
+        setError(err); // 🚀 تعيين حالة الخطأ إذا فشل الجلب
+        console.error("Error fetching admin data:", err);
+        console.log(data)
+      } finally {
+        setLoading(false); // 🚀 تعيين حالة التحميل إلى false بعد اكتمال الجلب (سواء نجاح أو فشل)
+      }
+    };
+
+    fetchAdminData();
+  }, [path, page, pageSize]); // 🚀 إعادة الجلب كلما تغير الـ path أو الصفحة الحالية أو حجم الصفحة
+
+  const handleEdit = (item) => {
+    setSelectedItem(item);
+    setOpenModal(true);
   };
+
+  // const handleRoomDelete = async (id) => {
+  //   try {
+  //     // 🚀 هنا أيضاً تم تعديل استدعاء الـ API ليناسب الهيكل الجديد بدون تكرار /api/
+  //     const response = await API.get(`rooms/hotelId/${id}`); // 🚀🗑️ تم التعديل
+  //     const hotelId = response.data; 
+
+  //     // 🚀 تم تعديل مسار الحذف أيضاً
+  //     await API.delete(`/${path}/${id}/${hotelId}`); // 🚀🗑️ تم التعديل
+  //     setData(data.filter((item) => item._id !== id)); 
+  //     setRowCount((prev) => prev - 1); 
+  //   } catch (err) {
+  //     console.error("Error deleting room:", err);
+  //   }
+  // };
+
+const handleRoomDelete = async (id) => {
+  // 1. طلب التأكيد من الأدمن
+  const { isConfirmed } = await Swal.fire({
+    title: 'Are you sure?',
+    text: "You are about to delete this room. This action cannot be undone!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  });
+
+  if (!isConfirmed) return;
+
+  try {
+    // جلب الـ Hotel ID
+    const response = await API.get(`/rooms/${id}/hotel`);
+    const hotelId = response.data.hotelId;
+
+    // محاولة الحذف
+    await API.delete(`/rooms/${id}/${hotelId}`);
+
+    // تحديث القائمة في الواجهة
+    setData((prev) => prev.filter((item) => item._id !== id));
+    setRowCount((prev) => prev - 1);
+
+    // تنبيه بالنجاح
+    Swal.fire('Deleted!', 'The room has been deleted.', 'success');
+
+  } catch (err) {
+    // تنبيه بالفشل (مثلاً لو الغرفة محجوزة)
+    const errorMsg = err.response?.data?.message || "Something went wrong!";
+    Swal.fire('Failed!', errorMsg, 'error');
+    console.error("Delete failed:", err);
+  }
+};
+
+
 
   const handleDelete = async (id) => {
-    try {
-      await axios.delete(`/${path}/${id}`);
-      setList(list.filter((item) => item._id !== id));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const { isConfirmed } = await Swal.fire({
+    title: 'Confirm Deletion',
+    text: `Are you sure you want to delete this ${path.slice(0, -1)}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Confirm'
+  });
 
-  const userActionColumn = [
+  if (!isConfirmed) return;
+
+  try {
+    await API.delete(`/${path}/${id}`);
+    
+    // تحديث الـ State
+    setData(data.filter((item) => item._id !== id)); 
+    setRowCount((prev) => prev - 1); 
+
+    Swal.fire('Success!', 'The item has been removed.', 'success');
+
+  } catch (err) {
+    const errorMsg = err.response?.data?.message || "Deletion failed. It might have active bookings.";
+    Swal.fire('Error', errorMsg, 'error');
+    console.error("Error deleting item:", err);
+  }
+};
+  // 🚀 منطق موحد لعمود الإجراءات
+  const actionColumn = [
     {
       field: "action",
       headerName: "Action",
-      width: 200,
+      width: 250,
       renderCell: (params) => {
         return (
           <div className="cellAction">
             <Link to={`/${path}/${params.row._id}`} style={{ textDecoration: "none" }}>
               <div className="viewButton">View</div>
             </Link>
+            
+            <div className="editButton" onClick={() => handleEdit(params.row)}>
+              Edit
+            </div>
+
+            {/* 🚀 حذف مشروط بناءً على المسار */}
             {path === "rooms" ? (
               <div className="deleteButton" onClick={() => handleRoomDelete(params.row._id)}>
                 Delete
@@ -62,48 +190,52 @@ const Datatable = ({ columns }) => {
     },
   ];
 
-  const actionColumn = [
-    {
-      field: "action",
-      headerName: "Action",
-      width: 200,
-      renderCell: (params) => {
-        return (
-          <div className="cellAction">
-            {path === "rooms" ? (
-              <div className="deleteButton" onClick={() => handleRoomDelete(params.row._id)}>
-                Delete
-              </div>
-            ) : (
-              <div className="deleteButton" onClick={() => handleDelete(params.row._id)}>
-                Delete
-              </div>
-            )}
-          </div>
-        );
-      },
-    },
-  ];
+  // 🗑️ تم إزالة تكرار userActionColumn و actionColumn
+  // const userActionColumn = [...]
+  // const actionColumn = [...]
+  // const combinedColumns = path === "users" ? columns.concat(userActionColumn) : columns.concat(actionColumn);
 
-  const combinedColumns = path === "users" ? columns.concat(userActionColumn) : columns.concat(actionColumn);
+  // 🚀 الآن، الأعمدة سيتم دمجها دائماً مع 'actionColumn' الواحدة
+  const combinedColumns = columns.concat(actionColumn);
 
   return (
     <div className="datatable">
       <div className="datatableTitle">
-        {path}
+        {/* 🚀 لجعل العنوان أكثر وضوحًا للمستخدم */}
+        {listType === "hotels" ? "Hotels" : listType === "rooms" ? "Rooms" : listType === "users" ? "Users" : "List"}
         <Link to={`/${path}/new`} className="link">
-          Add New
+          Add New {listType === "hotels" ? "Hotel" : listType === "rooms" ? "Room" : listType === "users" ? "User" : "Item"}
         </Link>
       </div>
-      <DataGrid
-        className="datagrid"
-        rows={list}
-        columns={combinedColumns}
-        pageSize={9}
-        rowsPerPageOptions={[9]}
-        checkboxSelection
-        getRowId={(row) => row._id}
-      />
+      {error ? (
+        <p>Error loading data: {error.message}</p> // 🚀 عرض رسالة الخطأ
+      ) : (
+        <DataGrid
+          className="datagrid"
+          rows={data} // 🚀 استخدام حالة 'data' الآن
+          columns={combinedColumns}
+          pageSize={pageSize} // 🚀 حجم الصفحة الحالي
+          rowCount={rowCount} // 🚀 إجمالي الصفوف من الـ backend لواجهة المستخدم الخاصة بالـ pagination
+          paginationMode="server" // 🚀 مهم جداً: لتفعيل الـ pagination من جانب السيرفر
+          onPageChange={(newPage) => setPage(newPage)} // 🚀 تحديث حالة الصفحة عند تغييرها
+          onPageSizeChange={(newSize) => setPageSize(newSize)} // 🚀 تحديث حجم الصفحة
+          rowsPerPageOptions={[5, 9, 10, 25, 50]} // 🚀 خيارات أكثر مرونة لحجم الصفحة
+          checkboxSelection
+          getRowId={(row) => row._id}
+          loading={loading} // 🚀 إظهار مؤشر التحميل
+          autoHeight // 🚀 ضبط الارتفاع تلقائياً بناءً على المحتوى
+        />
+      )}
+
+      {/* 🚀 نافذة التحديث */}
+      {openModal && (
+        <UpdateModal 
+          setOpen={setOpenModal} 
+          type={path} 
+          item={selectedItem} 
+          id={selectedItem._id} 
+        />
+      )}
     </div>
   );
 };

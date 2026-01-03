@@ -190,3 +190,61 @@
   align-items: center;
   gap: 30px;
 }  
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.edit-btn {
+  margin-top: 15px;
+  padding: 8px 20px;
+  background-color: #0071c2;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.edit-section {
+  background: white;
+  padding: 25px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin: 20px 0;
+}
+
+.edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.input-group input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.save-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #4cbb17;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}

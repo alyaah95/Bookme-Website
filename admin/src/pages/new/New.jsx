@@ -4,83 +4,99 @@ import { useState } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import "./new.scss";
+import API from "../../api/axiosInstance";
 
 const New = ({ inputs, title }) => {
   const [file, setFile] = useState(null);
   const [info, setInfo] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
+  const validate = () => {
+    // 1. التأكد من كل الحقول
+    for (let input of inputs) {
+      if (!info[input.id]) return `Field "${input.label}" is required.`;
+    }
+
+    // 2. فحص الإيميل
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (info.email && !emailRegex.test(info.email)) return "Invalid email format.";
+
+    // 3. فحص الباسورد (مثلاً لا يقل عن 6 أرقام)
+    if (info.password && info.password.length < 6) return "Password must be at least 6 characters.";
+
+    // 4. فحص رقم الهاتف (لو موجود)
+    if (info.phone && info.phone.length < 10) return "Please enter a valid phone number.";
+
+    return null;
+  };
+
   const handleClick = async (e) => {
     e.preventDefault();
-    const data = new FormData();
+    setLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
-    // Check if all fields are filled
-    const allFieldsFilled = inputs.every((input) => info[input.id]);
-    if (!allFieldsFilled) {
-      setErrorMessage("Please fill in all fields.");
+    // تشغيل الفحص
+    const validationError = validate();
+    if (validationError) {
+      setErrorMessage(validationError);
+      setLoading(false);
       return;
     }
 
-    if (file) {
-      data.append("file", file);
-      data.append("upload_preset", "upload");
+    try {
+      let url = "https://i.ibb.co/MBtjqXQ/no-avatar.gif";
 
-      try {
+      // لو فيه ملف، ارفعه الأول
+      if (file) {
+        const data = new FormData();
+        data.append("file", file);
+        data.append("upload_preset", "upload");
         const uploadRes = await axios.post(
           "https://api.cloudinary.com/v1_1/dqfvmwrye/image/upload",
           data
         );
-
-        const { url } = uploadRes.data;
-
-        const newUser = {
-          ...info,
-          img: url,
-        };
-
-        await axios.post("/auth/register", newUser);
-
-        // Clear the form and show success message
-        setFile(null);
-        setInfo({});
-        setSuccessMessage("User added successfully!");
-        setErrorMessage("");
-
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-          setSuccessMessage("");
-        }, 3000);
-      } catch (err) {
-        console.log(err);
+        url = uploadRes.data.url;
       }
-    } else {
-      // If no file is uploaded, use the default image URL
-      const newUser = {
-        ...info,
-        img: "https://i.ibb.co/MBtjqXQ/no-avatar.gif",
-      };
 
-      try {
-        await axios.post("/auth/register", newUser);
+      const newUser = { ...info, img: url };
 
-        // Clear the form and show success message
-        setFile(null);
-        setInfo({});
-        setSuccessMessage("User added successfully!");
-        setErrorMessage("");
+      // إرسال الطلب (كود واحد لكل الحالات)
+      await API.post("/auth/register", newUser);
 
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-          setSuccessMessage("");
-        }, 3000);
-      } catch (err) {
-        console.log(err);
+      setSuccessMessage("User added successfully!");
+      setInfo({});
+      setFile(null);
+      
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      let msg = "Something went wrong!";
+      
+      // فحص إذا كان الخطأ هو تكرار بيانات (Duplicate Key)
+      if (err.response?.data?.message?.includes("E11000")) {
+        if (err.response.data.message.includes("email")) {
+          msg = "This email is already in use. Please try another one.";
+        } else if (err.response.data.message.includes("username")) {
+          msg = "This username is already taken.";
+        } else {
+          msg = "This record already exists.";
+        }
+      } else {
+        // لو فيه رسالة تانية جاية من السيرفر
+        msg = err.response?.data?.message || "Failed to connect to server.";
       }
+
+      setErrorMessage(msg);
+      console.log("Full Error:", err);
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -95,11 +111,7 @@ const New = ({ inputs, title }) => {
         <div className="bottom">
           <div className="left">
             <img
-              src={
-                file
-                  ? URL.createObjectURL(file)
-                  : "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"
-              }
+              src={file ? URL.createObjectURL(file) : "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"}
               alt=""
             />
           </div>
@@ -126,13 +138,17 @@ const New = ({ inputs, title }) => {
                     placeholder={input.placeholder}
                     id={input.id}
                     value={info[input.id] || ""}
+                    // إضافة تلميح بصري لو الحقل مطلوب
+                    required
                   />
                 </div>
               ))}
               <button onClick={handleClick}>Send</button>
-              {successMessage && <p className="successMessage">{successMessage}</p>}
-              {errorMessage && <p className="errorMessage">{errorMessage}</p>}
             </form>
+            <div className="messages">
+               {successMessage && <p className="successMessage">{successMessage}</p>}
+               {errorMessage && <p className="errorMessage">{errorMessage}</p>}
+            </div>
           </div>
         </div>
       </div>
@@ -141,5 +157,3 @@ const New = ({ inputs, title }) => {
 };
 
 export default New;
-
-

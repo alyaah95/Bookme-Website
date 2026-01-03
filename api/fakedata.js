@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 import csv from "csv-parser";
 import fs from "fs";
 
@@ -29,7 +28,7 @@ dotenv.config();
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    await mongoose.connect(`mongodb+srv://lamiaa:1112002@cluster0.a0d674h.mongodb.net/booking?retryWrites=true&w=majority&appName=Cluster0`, {
+    await mongoose.connect(`mongodb+srv://lilo:a2002lolo2002@cluster0.mfb98yv.mongodb.net/booking?retryWrites=true&w=majority&appName=Cluster0`, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

@@ -16,7 +16,9 @@ import { AuthContext } from "../../context/AuthContext";
 import { SearchContext } from "../../context/SearchContext";
 import useFetch from "../../hooks/useFetch";
 import "./hotel.css";
-//import { useEffect } from "react";
+import { useEffect } from "react";
+import api from "../../utils/api.js";
+import { FaStar } from "react-icons/fa";
 
 
 const Hotel = () => {
@@ -25,6 +27,7 @@ const Hotel = () => {
   const [slideNumber, setSlideNumber] = useState(0);
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   const { data, loading} = useFetch(`/hotels/find/${id}`);
   const { user } = useContext(AuthContext);
@@ -32,6 +35,19 @@ const Hotel = () => {
 
   const { dates, options } = useContext(SearchContext);
   
+
+  useEffect(() => {
+    const fetchHotelReviews = async () => {
+      try {
+        // جلب كل التقييمات الخاصة بهذا الفندق بالذات
+        const res = await api.get(`/reviews/${id}/reviews`); 
+        setReviews(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchHotelReviews();
+  }, [id]);
 
   const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
   function dayDifference(date1, date2) {
@@ -133,18 +149,35 @@ const Hotel = () => {
                 <p className="hotelDesc">{data.desc}</p>
               </div>
               <div className="hotelDetailsPrice">
-                <h1>Perfect for a {days}-night stay!</h1>
+                <h1>Perfect for a {days?days:'1'}-night stay!</h1>
                 <span>
                   Located in the real heart of Krakow, this property has an
                   excellent location score of 9.8!
                 </span>
                 <h2>
-                  <b>${days * data.cheapestPrice * options.room}</b> ({days}{" "}
+                  <b>${days?days:'1' * data.cheapestPrice * options.room}</b> ({days?days:'1'}{" "}
                   nights)
                 </h2>
                 <button onClick={handleClick}>Reserve or Book Now!</button>
               </div>
             </div>
+          </div>
+          <div className="hotelReviews">
+            <h3>Guest Reviews</h3>
+            {reviews.map((rev) => (
+              <div key={rev._id} className="reviewCard">
+                <div className="userInfo">
+                  {/* بفضل الـ populate اللي عملناه في الباك أند */}
+                  <img src={rev.userId.img || "/no-avatar.png"} alt="" />
+                  <span>{rev.userId.username}</span>
+                </div>
+                <div className="stars">
+                  {[...Array(rev.rating)].map((_, i) => <FaStar key={i} />)}
+                </div>
+                <p>{rev.comment}</p>
+                <small>{new Date(rev.createdAt).toDateString()}</small>
+              </div>
+            ))}
           </div>
         </div>
       )}
