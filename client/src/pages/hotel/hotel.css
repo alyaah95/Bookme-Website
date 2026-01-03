@@ -294,3 +294,60 @@
     align-items:center;
     gap: 30px;
   }
+
+    .hotelReviews {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+    }
+  
+    .reviewCard {
+      border-bottom: 1px solid #eee;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    .reviewCard:last-child {
+      border-bottom: none;
+    }
+  
+    .reviewUser {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+  
+    .reviewUser img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #0071c2;
+    }
+  
+    .reviewUser .userName {
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
+    }
+  
+    .reviewStars {
+      color: #febb02;
+      /* لون النجوم الذهبي */
+      display: flex;
+      gap: 2px;
+    }
+  
+    .reviewComment {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+    }
+  
+    .reviewDate {
+      font-size: 12px;
+      color: #999;
+    }

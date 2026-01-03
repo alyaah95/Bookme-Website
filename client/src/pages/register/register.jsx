@@ -1,4 +1,5 @@
 import axios from "axios";
+import api from "../../utils/api";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
@@ -62,7 +63,7 @@ const Register = () => {
 
     dispatch({ type: "REGISTER_START" });
     try {
-      const res = await axios.post("/auth/register", credentials);
+      const res = await api.post("/auth/register", credentials);
       dispatch({ type: "REGISTER_SUCCESS", payload: res.data.details });
       // Redirect to login page after successful registration
       navigate("/login");

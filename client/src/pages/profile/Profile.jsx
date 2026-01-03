@@ -1,110 +1,125 @@
-//import React, { useState } from 'react';
-//import { FaStar } from 'react-icons/fa';
-import { useContext } from "react";
-//import { useEffect } from "react";
-
+import { useContext, useState } from "react";
+import Navbar from "../../components/navbar/Navbar";
+import MailList from "../../components/mailList/MailList";
 import Footer from "../../components/footer/Footer";
-import './profile.css';
-//import MainList from "../../components/mainList/MainList"
 import CurrentBookings from '../../components/currentBookings/CurrentBookings.jsx';
 import HistoryBookings from '../../components/historyBookings/HistoryBookings.jsx';
-import MailList from "../../components/mailList/MailList";
-import Navbar from "../../components/navbar/Navbar";
 import ReviewList from "../../components/reviewList/ReviewList";
 import { AuthContext } from "../../context/AuthContext";
-//import useFetch from "../../hooks/useFetch";
-//import axios from "axios";
+import api from "../../utils/api";
+import axios from "axios";
+import Swal from "sweetalert2";
+import './profile.css';
 
 const Profile = () => {
-    // Dummy user data (replace with real data from your backend)
-    //const { user } = useContext(AuthContext);
-    const {user,dispatch} = useContext(AuthContext); // Assuming there's a updateUser function in your context to update user data
+  const { user, dispatch } = useContext(AuthContext);
+  const [editMode, setEditMode] = useState(false);
+  const [info, setInfo] = useState({});
 
-    //const userId =user._id;
-    //const [image, setImage] = useState();
-    //const [userImage, setUserImage] = useState();
+  const handleChange = (e) => {
+    setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
+  };
 
-    
-    
-
+  // رفع الصورة (كما هو في كودك مع تحديث بسيط للـ Context)
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
+    if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", "upload"); // Replace "your_upload_preset" with your Cloudinary upload preset
+    formData.append("upload_preset", "upload");
 
-    // Upload image to Cloudinary
     try {
-        const response = await fetch("https://api.cloudinary.com/v1_1/dqfvmwrye/image/upload", {
-          method: "POST",
-          body: formData,
-        });
-        if (response.ok) {
-          const data = await response.json();
-          updateUserImage(data.secure_url.toString()); // Call function to update user image in the database
-          const updatedUser = { ...user, img: data.secure_url.toString() };
-          dispatch({ type: "LOGIN_SUCCESS", payload: updatedUser });
-          
-          
-
-        }
-      } catch (error) {
-        console.error("Error uploading image:", error);
-      }
-    };
-  
-    const updateUserImage = async (imageUrl) => {
-      try {
-        const response = await fetch(`http://localhost:8800/api/users/${user._id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ img: imageUrl }),
-        });
-        if (response.ok) {
-          console.log("User image updated successfully");
-        }
-      } catch (error) {
-        console.error("Error updating user image:", error);
-      }
+      const res = await axios.post("https://api.cloudinary.com/v1_1/dqfvmwrye/image/upload", formData);
+      const imageUrl = res.data.secure_url;
+      await api.put(`/users/${user._id}`, { img: imageUrl });
+      
+      const updatedUser = { ...user, img: imageUrl };
+      dispatch({ type: "LOGIN_SUCCESS", payload: updatedUser });
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      Swal.fire("Success", "Profile image updated", "success");
+    } catch (error) {
+      Swal.fire("Error", "Failed to upload image", "error");
+    }
   };
-  
-    return (
-      <div>
-        <Navbar/>
 
-        <div className="profile">
-  
-          <div className="profile-header">
-            <label htmlFor="image-upload" className="profile-picture">
-        <img src={user.img || "https://i.ibb.co/MBtjqXQ/no-avatar.gif"} alt="avatar" className="profile-picture" />
-        {!user.img && <h4 className="upload">Upload image</h4>}
-        <input
-          type="file"
-          id="image-upload"
-          accept="image/*"
-          onChange={handleImageChange}
-          style={{ display: "none" }}
-        />
-      </label>
-            <h1 className="profile-name">{user.name}</h1>
-            <p className="profile-email">{user.email}</p>
-          </div>
+  // تحديث البيانات والباسوورد
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.put(`/users/${user._id}`, info);
+      
+      // تحديث الـ Context والـ LocalStorage
+      dispatch({ type: "LOGIN_SUCCESS", payload: res.data });
+      localStorage.setItem("user", JSON.stringify(res.data));
+      
+      setEditMode(false);
+      setInfo({}); // تفريغ البيانات المؤقتة
+      Swal.fire("Updated!", "Your information has been updated.", "success");
+    } catch (error) {
+      Swal.fire("Error", error.response?.data?.message || "Update failed", "error");
+    }
+  };
 
-          <CurrentBookings />
-          <HistoryBookings/>
-          <ReviewList />
+  return (
+    <div>
+      <Navbar />
+      <div className="profile">
+        <div className="profile-header">
+          <label htmlFor="image-upload" className="profile-picture-container">
+            <img 
+              src={user.img || "https://i.ibb.co/MBtjqXQ/no-avatar.gif"} 
+              alt="avatar" 
+              className="profile-picture" 
+            />
+            <div className="upload-overlay">Update Photo</div>
+            <input type="file" id="image-upload" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
+          </label>
+          <h1 className="profile-name">{user.username}</h1>
+          <p className="profile-email">{user.email}</p>
           
+          <button className="edit-btn" onClick={() => setEditMode(!editMode)}>
+            {editMode ? "Cancel Editing" : "Edit Personal Info"}
+          </button>
         </div>
-        <div className="End_Page">
+
+        {/* --- وضع التعديل --- */}
+        {editMode && (
+          <div className="edit-section">
+            <h3>Update Your Information</h3>
+            <div className="edit-grid">
+              <div className="input-group">
+                <label>Phone Number</label>
+                <input id="phone" type="text" defaultValue={user.phone} onChange={handleChange} />
+              </div>
+              <div className="input-group">
+                <label>Country</label>
+                <input id="country" type="text" defaultValue={user.country} onChange={handleChange} />
+              </div>
+              <div className="input-group">
+                <label>City</label>
+                <input id="city" type="text" defaultValue={user.city} onChange={handleChange} />
+              </div>
+              <div className="input-group">
+                <label>New Password (Leave blank to keep current)</label>
+                <input id="password" type="password" placeholder="********" onChange={handleChange} />
+              </div>
+            </div>
+            <button className="save-btn" onClick={handleUpdate}>Save Changes</button>
+          </div>
+        )}
+
+        <div className="profile-content">
+          <CurrentBookings />
+          <HistoryBookings />
+          <ReviewList />
+        </div>
+      </div>
+      <div className="End_Page">
         <MailList />
         <Footer />
-        </div>
-        
       </div>
-    );
-  };
-  
-  
-  export default Profile;
+    </div>
+  );
+};
+
+export default Profile;

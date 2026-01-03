@@ -3,7 +3,16 @@ import Room from "../models/Room.js";
 
 export const createRoom = async (req, res, next) => {
   const hotelId = req.params.hotelid;
-  const newRoom = new Room(req.body);
+
+  // هنا بنبني الـ Room object بشكل يدوي وصريح عشان نمنع أي Type Conflict
+  const newRoom = new Room({
+    title: req.body.title,
+    price: req.body.price,
+    maxPeople: req.body.maxPeople,
+    desc: req.body.desc,
+    roomNumbers: req.body.roomNumbers, // المصفوفة اللي جاية من الـ split
+    hotelId: hotelId // الـ ID اللي جاي من الـ Params
+  });
 
   try {
     const savedRoom = await newRoom.save();
@@ -12,26 +21,39 @@ export const createRoom = async (req, res, next) => {
         $push: { rooms: savedRoom._id },
       });
     } catch (err) {
-      next(err);
+      return next(err);
     }
     res.status(200).json(savedRoom);
   } catch (err) {
+    // لو لسه فيه مشكلة في الـ Validation هتظهر هنا بوضوح
     next(err);
   }
 };
 
 export const updateRoom = async (req, res, next) => {
   try {
-    const updatedRoom = await Room.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
-    );
-    res.status(200).json(updatedRoom);
+    const room = await Room.findById(req.params.id);
+    if (!room) return res.status(404).json("Room not found");
+
+    const hasBookings = room.roomNumbers.some(rn => rn.unavailableDates.length > 0);
+
+    // المنع في حالة وجود حجز
+    if (hasBookings && (req.body.price || req.body.maxPeople)) {
+      return res.status(400).json({ 
+        message: "This room has active bookings, you cannot change price or capacity!" 
+      });
+    }
+
+    // تحديث البيانات يدوياً (هذا يسمح بتشغيل الـ pre-save hook)
+    Object.assign(room, req.body);
+    const savedRoom = await room.save(); 
+
+    res.status(200).json(savedRoom);
   } catch (err) {
     next(err);
   }
 };
+
 export const updateRoomAvailability = async (req, res, next) => {
   try {
     await Room.updateOne(
@@ -50,22 +72,27 @@ export const updateRoomAvailability = async (req, res, next) => {
 export const deleteRoom = async (req, res, next) => {
   const hotelId = req.params.hotelid;
   try {
-    await Room.findByIdAndDelete(req.params.id);
-    try {
-      await Hotel.findByIdAndUpdate(hotelId, {
-        $pull: { rooms: req.params.id },
-      });
-    } catch (err) {
-      next(err);
+    const room = await Room.findById(req.params.id);
+    
+    // فحص لو أي رقم غرفة جواه تواريخ محجوزة
+    const hasBookings = room.roomNumbers.some(rn => rn.unavailableDates.length > 0);
+    
+    if (hasBookings) {
+      return res.status(400).json({ message: "This room has active bookings, cannot delete!" });
     }
+
+    await Room.findByIdAndDelete(req.params.id);
+    await Hotel.findByIdAndUpdate(hotelId, { $pull: { rooms: req.params.id } });
+    
     res.status(200).json("Room has been deleted.");
   } catch (err) {
     next(err);
   }
 };
+
 export const getRoom = async (req, res, next) => {
   try {
-    const room = await Room.findById(req.params.id);
+    const room = await Room.findById(req.params.id).populate("hotelId", "name"); // اجلب الغرفة ومعها اسم الفندق فقط
     res.status(200).json(room);
   } catch (err) {
     next(err);
@@ -164,7 +191,10 @@ export const deleteDatesFromRooms = async (req, res, next) => {
       }
 
       // Save the updated room
-      await room.save();
+      await Room.updateOne(
+        { _id: roomid },
+        { $set: { roomNumbers: room.roomNumbers } }
+      );
     }
 
     res.status(200).json('Selected dates have been deleted from room availability.');

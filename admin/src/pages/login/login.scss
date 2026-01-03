@@ -3,30 +3,113 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
+  background-color: #f7f7f7;
 
-.lContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+  .lContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 300px;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
-.lInput{
-  height: 30px;
-  padding: 10px;
-}
+    .lInput {
+      height: 30px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
 
-.lButton {
-  border: none;
-  padding: 10px 20px;
-  background-color: #0071c2;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 5px;
-}
+    .lButton {
+      border: none;
+      padding: 10px;
+      background-color: #0071c2;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
 
-.lButton:disabled{
-  background-color: #0071c28c;
-  cursor: not-allowed;
+      &:disabled {
+        background-color: #0071c28c;
+        cursor: not-allowed;
+      }
+    }
+
+    .forgotLink {
+      font-size: 13px;
+      color: #0071c2;
+      cursor: pointer;
+      text-align: right;
+      margin: -5px 0 5px 0;
+    }
+  }
+
+  // المودال الاحترافي
+  .modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999; // أقل من الـ SweetAlert لضمان ظهور التنبيه فوقه
+  }
+
+  .modalContent {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+
+    h2 {
+      margin: 0;
+      color: #333;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    p {
+      font-size: 14px;
+      color: #555;
+      margin: 0;
+      text-align: center;
+    }
+
+    // هنا الحقول والزراير جوه المودال هتاخد نفس ستايل اللي بره
+    .lInput {
+      height: 30px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .lButton {
+      border: none;
+      padding: 12px;
+      background-color: #0071c2;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .closeBtn {
+      background: none;
+      border: none;
+      color: #777;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+  }
 }

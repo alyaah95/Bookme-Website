@@ -3,18 +3,32 @@ import bcrypt from "bcryptjs"; // Add this import
 
 export const updateUser = async (req, res, next) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
-    );
-    res.status(200).json(updatedUser);
+    // 1. ابحثي عن المستخدم أولاً
+    const user = await User.findById(req.params.id);
+    if (!user) return next(createError(404, "User not found!"));
+
+    // 2. حدثي البيانات يدويًا من الـ body
+    // نستخدم Object.assign لدمج البيانات الجديدة مع القديمة
+    Object.assign(user, req.body);
+
+    // 3. هنا السر: استدعاء .save() هو ما سيقوم بتشغيل التشفير في الموديل
+    const updatedUser = await user.save();
+
+    // إخفاء الباسوورد من الرد الراجع للمتصفح للأمان
+    const { password, ...otherDetails } = updatedUser._doc;
+    res.status(200).json(otherDetails);
+    
   } catch (err) {
     next(err);
   }
 };
+
 export const deleteUser = async (req, res, next) => {
   try {
+    const user = await User.findById(req.params.id);
+    if (user.CurrentBookings.length > 0) {
+      return res.status(400).json({ message: "This user has active bookings, cannot delete!" });
+    }
     await User.findByIdAndDelete(req.params.id);
     res.status(200).json("User has been deleted.");
   } catch (err) {

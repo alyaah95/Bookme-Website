@@ -4,7 +4,7 @@ import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import "./historyBookings.css";
-
+import api from '../../utils/api';
 const HistoryBookings = () => {
     const { user} = useContext(AuthContext);
     const userId = user._id;
@@ -15,7 +15,7 @@ const HistoryBookings = () => {
     const deleteOldDatesFromRoomAvailability = async () => {
       try {
 
-        const res = await axios.delete('http://localhost:8800/api/rooms/deleteoldAvailability');
+        const res = await api.delete('/rooms/deleteoldAvailability');
         return res.data ; // Assuming the server returns a message upon successful deletion
         
       } catch (error) {
@@ -26,94 +26,69 @@ const HistoryBookings = () => {
   
     useEffect(() => {
         const fetchcurrentBookings = async () => {
+            if (!userId) return; // تأمين الكود لو الـ userId لسه مش موجود
             try {
-                const response = await fetch(`http://localhost:8800/api/users/${userId}/currentBookings`);
-                if (!response.ok) {
-                    throw new Error("Failed to fetch current bookings");
-                }
-                const data = await response.json();
-                setcurrentBookings(data);
-            }catch (error) {
-                console.error("Error fetching current bookings:", error.message);
+                const response = await api.get(`/users/${userId}/currentBookings`);
+                setcurrentBookings(response.data);
+            } catch (error) {
+                console.error("Error fetching current bookings:", error.response?.data?.message || error.message);
             }
         };
-  
         fetchcurrentBookings();
     }, [userId]);
 
+    // جلب تاريخ الحجوزات
     useEffect(() => {
         const fetchhistoryBookings = async () => {
+            if (!userId) return;
             try {
-                const response = await fetch(`http://localhost:8800/api/users/${userId}/historyBookings`);
-                if (!response.ok) {
-                    throw new Error("Failed to fetch current bookings");
-                }
-                const data = await response.json();
-                sethistoryBookings(data);
-            }catch (error) {
-                console.error("Error fetching current bookings:", error.message);
+                const response = await api.get(`/users/${userId}/historyBookings`);
+                sethistoryBookings(response.data);
+            } catch (error) {
+                console.error("Error fetching history bookings:", error.response?.data?.message || error.message);
             }
         };
-  
         fetchhistoryBookings();
     }, [userId]);
 
     function isBookingOld(booking) {
-        const toDate = Date.parse(booking.toDate.split(", ").join(" "));
-        const currentDate = Date.parse( new Date().toDateString() );
-         
-  
+        // التأكد من تحويل التاريخ بشكل سليم
+        const toDate = new Date(booking.toDate).getTime();
+        const currentDate = new Date().setHours(0, 0, 0, 0); // بداية اليوم الحالي
+        
         return toDate < currentDate;
     };
 
+    // إضافة حجز للتاريخ
     const addHistoryBookingCard = async (bookingCard) => {
-        try { 
-          const response = await fetch(`http://localhost:8800/api/users/${userId}/historybookings`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({bookingCard:bookingCard})
-          });
-    
-          
-          if (!response.ok) {
-            throw new Error('Failed to add booking');
-          }else{
+        try {
+            // في الـ POST بنبعت الـ body مباشرة كتاني parameter
+            await api.post(`/users/${userId}/historybookings`, { bookingCard });
+
+            // لو العملية نجحت، هنحذف الحجز من الحالي
             await removeCurrentBookingFromUser(bookingCard._id);
             console.log("This booking became old:", bookingCard);
-          }
-          
-        } catch (error) {
-          console.error('Error adding booking:', error.message);
-        }
-
-      };
-      
-      const removeCurrentBookingFromUser = async ( bookingId) => {
-        try {
-          const response = await fetch(`http://localhost:8800/api/users/${userId}/currentbookings`, {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({bookingId:bookingId})
             
-          });
-      
-          if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error(errorMessage || 'Failed to remove booking');
-          }
-
-          console.log('Booking removed successfully');
-      
-          return await response.json();
         } catch (error) {
-          console.error(error);
-          throw error;
+            console.error('Error adding booking:', error.response?.data?.message || error.message);
         }
-      };
+    };
+
+    // حذف حجز من القائمة الحالية
+    const removeCurrentBookingFromUser = async (bookingId) => {
+        try {
+            // في الـ DELETE بنحط الـ body جوه object اسمه data
+            const response = await api.delete(`/users/${userId}/currentbookings`, {
+                data: { bookingId }
+            });
+
+            console.log('Booking removed successfully');
+            return response.data;
+        } catch (error) {
+            console.error('Delete Error:', error.response?.data?.message || error.message);
+            throw error;
+        }
+    };
 
       
       currentBookings.forEach(async booking => {

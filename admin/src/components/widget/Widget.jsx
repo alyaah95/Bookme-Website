@@ -5,22 +5,21 @@ import StoreIcon from "@mui/icons-material/Store";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./widget.scss";
+import API from "../../api/axiosInstance";
 
 const Widget = ({ type }) => {
   const [userCount, setUserCount] = useState(0);
   const [hotelCount, setHotelCount] = useState(0);
   const [roomCount, setRoomCount] = useState(0);
+
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const response = await fetch('http://localhost:8800/api/users');
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        const data = await response.json();
-        setUserCount(data.length);
+        // نستخدم API.get والمسار النسبي فقط
+        const res = await API.get("/users");
+        setUserCount(res.data.length);
       } catch (error) {
-        console.error('Error fetching users:', error.message);
+        console.error('Error fetching users:', error.response?.data?.message || error.message);
       }
     };
     getUsers();
@@ -29,14 +28,10 @@ const Widget = ({ type }) => {
   useEffect(() => {
     const getRooms = async () => {
       try {
-        const response = await fetch('http://localhost:8800/api/rooms');
-        if (!response.ok) {
-          throw new Error('Failed to fetch rooms');
-        }
-        const data = await response.json();
-        setRoomCount(data.length);
+        const res = await API.get("/rooms");
+        setRoomCount(res.data.length);
       } catch (error) {
-        console.error('Error fetching rooms:', error.message);
+        console.error('Error fetching rooms:', error.response?.data?.message || error.message);
       }
     };
     getRooms();
@@ -45,14 +40,10 @@ const Widget = ({ type }) => {
   useEffect(() => {
     const getHotels = async () => {
       try {
-        const response = await fetch('http://localhost:8800/api/hotels');
-        if (!response.ok) {
-          throw new Error('Failed to fetch hotels');
-        }
-        const data = await response.json();
-        setHotelCount(data.length);
+        const res = await API.get("/hotels");
+        setHotelCount(res.data.length);
       } catch (error) {
-        console.error('Error fetching hotels:', error.message);
+        console.error('Error fetching hotels:', error.response?.data?.message || error.message);
       }
     };
     getHotels();

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from "../../context/AuthContext";
 import NewReview from '../../pages/newReview/NewReview.jsx';
 import "./reviewList.css";
+import api from '../../utils/api.js';
 
 const ReviewList = () => {
   const { user } = useContext(AuthContext);
@@ -14,15 +15,18 @@ const ReviewList = () => {
 
   useEffect(() => {
     const fetchHistoryBookings = async () => {
+      // تأمين الطلب: لو الـ userId مش موجود ميبعتش طلب للسيرفر ويطلع error
+      if (!userId) return;
+
       try {
-        const response = await fetch(`http://localhost:8800/api/users/${userId}/historyBookings`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch current bookings");
-        }
-        const data = await response.json();
-        setHistoryBookings(data);
+        // 1. استخدمنا api.get والمسار المختصر فقط
+        // 2. مفيش خطوة response.json() لأن Axios بيعملها لوحده
+        const response = await api.get(`/users/${userId}/historyBookings`);
+        setHistoryBookings(response.data);
       } catch (error) {
-        console.error("Error fetching current bookings:", error.message);
+        // 3. طريقة احترافية لسحب رسالة الخطأ من الباك أند
+        const msg = error.response?.data?.message || "Failed to fetch history bookings";
+        console.error("History Bookings Error:", msg);
       }
     };
 
@@ -31,15 +35,13 @@ const ReviewList = () => {
 
   useEffect(() => {
     const fetchUserReviews = async () => {
+      if (!userId) return;
       try {
-        const response = await fetch(`http://localhost:8800/api/users/${userId}/reviews`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch user reviews");
-        }
-        const data = await response.json();
-        setUserReviews(data);
+        const response = await api.get(`/reviews/user/${userId}/reviews`);
+        setUserReviews(response.data);
       } catch (error) {
-        console.error("Error fetching user reviews:", error.message);
+        const msg = error.response?.data?.message || "Failed to fetch user reviews";
+        console.error("User Reviews Error:", msg);
       }
     };
 
@@ -61,7 +63,7 @@ const ReviewList = () => {
                 ))}
               </div>
             </div>
-            <p>Hotel: {review.hotelName}</p>
+            <p>Hotel: {review.hotelId?.name}</p>
             <p>{review.comment}</p>
             <br />
           </li>

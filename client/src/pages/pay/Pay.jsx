@@ -1,82 +1,25 @@
-import React, { useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import CheckoutForm from "../../components/checkoutForm/CheckoutForm.jsx";
+import { useLocation } from "react-router-dom";
 import "./pay.css";
 
+// حطي هنا الـ Publishable key بتاعك
+const stripePromise = loadStripe("pk_test_51Skvrg38uyLp0lXPZrnNyxhn942TXDHF1eoGROob51hQ8NxwuwbFvikZHNe3pZD23Td3kVbAXMDHf3poPZV1ZMjo00otW4cBta",{locale: 'en',});
+
 const Pay = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    paymentMethod: 'fawry',
-    mobileNumber: '',
-    amount: '',
-  });
-
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    
-    const { paymentMethod, mobileNumber } = formData;
-    
-    if ((paymentMethod === 'fawry' || paymentMethod === 'vodafone_cash') && 
-        mobileNumber.length === 11 ) {
-      alert('Payment completed successfully');
-
-      // Clear the form fields after successful payment message
-      setFormData({
-        paymentMethod: 'fawry',
-        mobileNumber: '',
-        amount: ''
-      });
-
-      navigate('/');
-
-    } else {
-      alert('Failed to submit payment. Please check your input and try again.');
-    }
-  };
+  const location = useLocation();
+ const bookingAmount = location.state?.amount || 0;
+const bookingDetails = location.state?.details || null;
 
   return (
-    <div className="pay-here">
-      <h1 className="pay-here__title">Pay Here</h1>
-      <form className="pay-here__form" onSubmit={handleSubmit}>
-        <div className="pay-here__form-group">
-          <label className="pay-here__label" htmlFor="paymentMethod">
-            Payment Method:
-          </label>
-          <select
-            className="pay-here__input"
-            name="paymentMethod"
-            value={formData.paymentMethod}
-            onChange={handleInputChange}
-          >
-            <option value="fawry">Fawry</option>
-            <option value="vodafone_cash">Vodafone Cash</option>
-          </select>
-        </div>
-        <div className="pay-here__form-group">
-          <label className="pay-here__label" htmlFor="mobileNumber">
-            Mobile Number:
-          </label>
-          <input
-            className="pay-here__input"
-            type="text"
-            name="mobileNumber"
-            value={formData.mobileNumber}
-            onChange={handleInputChange}
-          />
-        </div>
-        <button className="pay-here__submit-btn" type="submit">
-          Submit Payment
-        </button>
-      </form>
+    <div className="pay-container">
+      <Elements stripe={stripePromise}>
+        <CheckoutForm 
+          bookingAmount={bookingAmount} 
+          bookingDetails={bookingDetails}
+        />
+      </Elements>
     </div>
   );
 };

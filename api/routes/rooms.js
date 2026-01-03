@@ -25,7 +25,7 @@ router.delete("/:id/:hotelid", verifyAdmin, deleteRoom);
 
 //GET
 
-// router.get("/admin", getAdminRooms);
+router.get("/admin", getAdminRooms);
 
 
 router.get("/:id", getRoom);

@@ -10,7 +10,7 @@ const Tlist = () => {
   const location = useLocation();
   const [type] =useState(location.state.type);
   const { data, loading } = useFetch(
-    `http://localhost:8800/api/hotels/type/${type}`
+    `/hotels/type/${type}`
   );
 
   return (

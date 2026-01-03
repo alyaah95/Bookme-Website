@@ -1,5 +1,6 @@
 import Hotel from "../models/Hotel.js";
 import Room from "../models/Room.js";
+import Stripe from "stripe";
 
 export const createHotel = async (req, res, next) => {
   const newHotel = new Hotel(req.body);
@@ -13,27 +14,52 @@ export const createHotel = async (req, res, next) => {
 };
 export const updateHotel = async (req, res, next) => {
   try {
-    const updatedHotel = await Hotel.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
-    );
-    res.status(200).json(updatedHotel);
+    const hotel = await Hotel.findById(req.params.id);
+    
+    // فحص مباشر في جدول الغرف عن أي غرفة تتبع هذا الفندق ولديها حجز
+    const roomWithBooking = await Room.findOne({
+      hotelId: req.params.id,
+      "roomNumbers.unavailableDates.0": { $exists: true } // هل يوجد على الأقل تاريخ واحد؟
+    });
+
+    if (roomWithBooking && (req.body.city || req.body.address || req.body.cheapestPrice)) {
+      return res.status(400).json({ 
+        message: "Action Denied: This hotel has active reservations in room " + roomWithBooking.title
+      });
+    }
+
+    Object.assign(hotel, req.body);
+    await hotel.save();
+    res.status(200).json(hotel);
   } catch (err) {
     next(err);
   }
 };
 export const deleteHotel = async (req, res, next) => {
   try {
+    const hotel = await Hotel.findById(req.params.id);
+    // جلب بيانات كل الغرف التابعة للفندق ده
+    const rooms = await Room.find({ _id: { $in: hotel.rooms } });
+    
+    const hasBookings = rooms.some(room => 
+      room.roomNumbers.some(rn => rn.unavailableDates.length > 0)
+    );
+
+    if (hasBookings) {
+      return res.status(400).json({ message: "This hotel has active bookings in its rooms, cannot delete!" });
+    }
+    
+    await Room.deleteMany({ _id: { $in: hotel.rooms } });
     await Hotel.findByIdAndDelete(req.params.id);
     res.status(200).json("Hotel has been deleted.");
   } catch (err) {
     next(err);
   }
 };
+
 export const getHotel = async (req, res, next) => {
   try {
-    const hotel = await Hotel.findById(req.params.id);
+    const hotel = await Hotel.findById(req.params.id).populate("rooms");
     res.status(200).json(hotel);
   } catch (err) {
     next(err);
@@ -237,5 +263,24 @@ export const getHotelsByType = async (req, res, next) => {
   } catch (error) {
     // Handle any errors that occur during the database query
     next(error);
+  }
+};
+
+
+export const createPaymentIntent = async (req, res, next) => {
+  const stripe = new Stripe(process.env.STRIPE_KEY);
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: req.body.amount * 100, // Stripe بيحسب بالـ "سنت"، فلازم نضرب في 100
+      currency: "usd", // أو "egp" حسب ما تحبي
+      automatic_payment_methods: { enabled: true },
+    });
+
+    res.status(200).send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (err) {
+    next(err);
   }
 };

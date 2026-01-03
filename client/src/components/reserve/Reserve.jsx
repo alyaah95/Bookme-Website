@@ -6,16 +6,19 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { SearchContext } from "../../context/SearchContext";
 import useFetch from "../../hooks/useFetch";
+import api from "../../utils/api";
 import "./reserve.css";
 //import { v4 as uuidv4 } from 'uuid';
 
 const Reserve = ({ setOpen, hotelId }) => {
   const [selectedRooms, setSelectedRooms] = useState([]);
-  const roomdata = useFetch(`http://localhost:8800/api/hotels/room/${hotelId}`);
-  const hoteldata = useFetch(`http://localhost:8800/api/hotels/find/${hotelId}`);
+  const roomdata = useFetch(`/hotels/room/${hotelId}`);
+  const hoteldata = useFetch(`/hotels/find/${hotelId}`);
   const { dates, options } = useContext(SearchContext);
   const { user  } = useContext(AuthContext);
 
+  const adultCount = options?.adult || 1; 
+  const childrenCount = options?.children || 0;
   /* generateCustomUUID = () => {
     const uuid = uuidv4();
     if (!user.CurrentBookings.some(booking => booking.id === uuid.replace(/-/g, '').substring(0, 22))) {
@@ -60,7 +63,7 @@ const Reserve = ({ setOpen, hotelId }) => {
     try {
       const roomTitles = [];
       for (const roomId of hotelRooms) {
-        const room = roomdata.data.find(room => room._id === roomId);
+        const room = roomdata.data.find(room => (room._id?._id || room._id) === roomId);
         if (!room) {
           throw new Error(`Room with ID ${roomId} not found`);
         }
@@ -159,13 +162,14 @@ const Reserve = ({ setOpen, hotelId }) => {
 
   const addBookingCard = async () => {
     try {
-      const roomNames = await searchRoomsForHotels(hoteldata.data.rooms, selectedRooms);
-      const reservationData = await getReservation(hoteldata.data.rooms, selectedRooms);
+      // 1. حسابات الداتا بتفضل زي ما هي (المنطق مبيتغيرش)
+      const roomIdsOnly = hoteldata.data.rooms.map(room => room._id || room);
+      const roomNames = await searchRoomsForHotels(roomIdsOnly, selectedRooms);
+      const reservationData = await getReservation(roomIdsOnly, selectedRooms);
       const roomsTotalPrice = reservationData.totalPrice;
       const RoomDetails = reservationData.roomDetails.filter(room => roomNames.includes(room.roomtitle));
 
       const bookingCard = {
-        
         fromDate: fromDate,
         toDate: toDate,
         city: hoteldata.data.city,
@@ -175,26 +179,33 @@ const Reserve = ({ setOpen, hotelId }) => {
         numberOfRooms: selectedRooms.length,
         roomNames: roomNames,
         ReservationDetails: RoomDetails,
-        totalCost: roomsTotalPrice + days * hoteldata.data.cheapestPrice
+        totalCost: roomsTotalPrice + (days * hoteldata.data.cheapestPrice)
       };
 
       const userId = user._id; 
-      const response = await fetch(`http://localhost:8800/api/users/${userId}/currentbookings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({bookingCard: bookingCard, userId: userId})
+
+      // 2. التعديل الجوهري هنا:
+      // بدل الـ fetch الطويلة، بنستخدم الـ api instance
+      // هو لوحده هيضيف http://localhost:8800/api في الأول
+      // وهو لوحده هيحول الكائن (Object) لـ JSON
+      // وهو لوحده هيبعت الكوكيز (التوكن)
+      
+      await api.post(`/users/${userId}/currentbookings`, {
+        bookingCard: bookingCard, 
+        userId: userId
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to add booking');
-      }
-
+      // 3. في Axios لو العملية فشلت، الكود هيروح للـ catch فوراً
+      // فمش محتاجين نشيك على if(!response.ok) يدوي
+      
       setOpen(false);
-      navigate('/pay');
+      navigate('/pay', {state: {amount: bookingCard.totalCost}});
+
     } catch (error) {
-      console.error('Error adding booking:', error.message);
+      // التعامل مع الخطأ بقى أذكى: بنشوف لو السيرفر باعت رسالة خطأ معينة
+      const errorMsg = error.response?.data?.message || 'Failed to add booking';
+      console.error('Error adding booking:', errorMsg);
+      alert(errorMsg); // تنبيه للمستخدم
     }
   };
 
@@ -205,15 +216,34 @@ const Reserve = ({ setOpen, hotelId }) => {
         return;
       }
 
-      await Promise.all(
-        selectedRooms.map((roomId) => {
-          const res = axios.put(`/rooms/availability/${roomId}`, {
-            dates: alldates,
-          });
-          return res.data;
-        })
-      );
-      addBookingCard();
+      // 1. حساب بيانات الحجز (نفس المنطق بتاعك)
+      const roomIdsOnly = hoteldata.data.rooms.map(room => room._id || room);
+      const roomNames = await searchRoomsForHotels(roomIdsOnly, selectedRooms);
+      const reservationData = await getReservation(roomIdsOnly, selectedRooms);
+      const RoomDetails = reservationData.roomDetails.filter(room => roomNames.includes(room.roomtitle));
+      
+      const bookingData = {
+        amount:reservationData.totalPrice + (days * hoteldata.data.cheapestPrice),
+        details: {
+          fromDate: fromDate,
+          toDate: toDate,
+          city: hoteldata.data.city,
+          numberOfAdults: adultCount,
+          numberOfChildren: childrenCount,
+          hotelName: hoteldata.data.name,
+          numberOfRooms: selectedRooms.length,
+          roomNames: roomNames,
+          selectedRooms: selectedRooms, // هنحتاجها عشان نقفل التواريخ بعد الدفع
+          ReservationDetails: RoomDetails,
+          totalCost: reservationData.totalPrice + (days * hoteldata.data.cheapestPrice),
+          alldates: alldates // هنحتاجها برضه
+        }
+      };
+
+      // 2. الانتقال لصفحة الدفع وإرسال كل البيانات دي معاكي
+      setOpen(false);
+      navigate('/pay', { state: bookingData });
+
     } catch (err) {
       console.error(err);
     }

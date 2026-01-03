@@ -5,7 +5,8 @@ import { Link, useLocation } from "react-router-dom";
 // 🗑️ No longer need useFetch hook as we'll handle fetching directly with axios for pagination
 // import useFetch from "../../hooks/useFetch"; // هذا السطر يمكن حذفه إذا لم يستخدم في أي مكان آخر
 import API from "../../api/axiosInstance";
-
+import UpdateModal from "../updateModal/UpdateModal";
+import Swal from 'sweetalert2';
 import "./datatable.scss";
 
 // 🚀 The 'columns' prop is crucial here, and we'll add a 'listType' prop
@@ -20,9 +21,10 @@ const Datatable = ({ columns, listType }) => { // 🚀 تمت إضافة listTyp
   const [page, setPage] = useState(0); // 🚀 DataGrid يستخدم فهرس الصفحة يبدأ من 0
   const [pageSize, setPageSize] = useState(9); // 🚀 حجم الصفحة الأولي، متوافق مع pageSize الحالي لديكِ
   const [rowCount, setRowCount] = useState(0); // 🚀 العدد الإجمالي للصفوف من الـ backend
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   // 🗑️ تم حذف استخدام useFetch الأصلي ودالة useEffect التي تعتمد عليه
-  // const [list, setList] = useState([]);
   // const { data } = useFetch(`/${path}`);
   // useEffect(() => {
   //   setList(data);
@@ -68,6 +70,10 @@ const Datatable = ({ columns, listType }) => { // 🚀 تمت إضافة listTyp
     fetchAdminData();
   }, [path, page, pageSize]); // 🚀 إعادة الجلب كلما تغير الـ path أو الصفحة الحالية أو حجم الصفحة
 
+  const handleEdit = (item) => {
+    setSelectedItem(item);
+    setOpenModal(true);
+  };
 
   // const handleRoomDelete = async (id) => {
   //   try {
@@ -85,57 +91,89 @@ const Datatable = ({ columns, listType }) => { // 🚀 تمت إضافة listTyp
   // };
 
 const handleRoomDelete = async (id) => {
+  // 1. طلب التأكيد من الأدمن
+  const { isConfirmed } = await Swal.fire({
+    title: 'Are you sure?',
+    text: "You are about to delete this room. This action cannot be undone!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  });
+
+  if (!isConfirmed) return;
+
   try {
-    const response = await axios.get(`/rooms/${id}/hotel`);
+    // جلب الـ Hotel ID
+    const response = await API.get(`/rooms/${id}/hotel`);
     const hotelId = response.data.hotelId;
 
-    console.log("Deleting room:", id);
-    console.log("Hotel ID:", hotelId);
+    // محاولة الحذف
+    await API.delete(`/rooms/${id}/${hotelId}`);
 
-    await axios.delete(`/rooms/${id}/${hotelId}`);
-    setList(list.filter((item) => item._id !== id));
+    // تحديث القائمة في الواجهة
+    setData((prev) => prev.filter((item) => item._id !== id));
+    setRowCount((prev) => prev - 1);
+
+    // تنبيه بالنجاح
+    Swal.fire('Deleted!', 'The room has been deleted.', 'success');
+
   } catch (err) {
+    // تنبيه بالفشل (مثلاً لو الغرفة محجوزة)
+    const errorMsg = err.response?.data?.message || "Something went wrong!";
+    Swal.fire('Failed!', errorMsg, 'error');
     console.error("Delete failed:", err);
   }
 };
 
 
 
-
   const handleDelete = async (id) => {
-    try {
-      // 🚀 تم تعديل مسار الحذف هنا أيضاً
-      await API.delete(`/${path}/${id}`); // 🚀🗑️ تم التعديل
-      setData(data.filter((item) => item._id !== id)); 
-      setRowCount((prev) => prev - 1); 
-    } catch (err) {
-      console.error("Error deleting item:", err);
-    }
-  };
+  const { isConfirmed } = await Swal.fire({
+    title: 'Confirm Deletion',
+    text: `Are you sure you want to delete this ${path.slice(0, -1)}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Confirm'
+  });
 
+  if (!isConfirmed) return;
+
+  try {
+    await API.delete(`/${path}/${id}`);
+    
+    // تحديث الـ State
+    setData(data.filter((item) => item._id !== id)); 
+    setRowCount((prev) => prev - 1); 
+
+    Swal.fire('Success!', 'The item has been removed.', 'success');
+
+  } catch (err) {
+    const errorMsg = err.response?.data?.message || "Deletion failed. It might have active bookings.";
+    Swal.fire('Error', errorMsg, 'error');
+    console.error("Error deleting item:", err);
+  }
+};
   // 🚀 منطق موحد لعمود الإجراءات
   const actionColumn = [
     {
       field: "action",
       headerName: "Action",
-      width: 200,
+      width: 250,
       renderCell: (params) => {
         return (
           <div className="cellAction">
-            {/* 🚀 رابط لعرض التفاصيل، بافتراض أن المسار هو /hotels/:id، /users/:id إلخ. */}
-            {path === "users" ? ( // 🚀 إظهار "View" للمستخدمين فقط
-              <Link to={`/${path}/${params.row._id}`} style={{ textDecoration: "none" }}>
-                <div className="viewButton">View</div>
-              </Link>
-            ) : (
-                // 🗑️ تم إزالة الرابط المتكرر للمسارات الأخرى إذا لم يكن مطلوبًا
-                // إذا كنتِ بحاجة لرابط عرض للفنادق/الغرف، قومي بإلغاء التعليق والتعديل:
-                // <Link to={`/${path}/${params.row._id}`} style={{ textDecoration: "none" }}>
-                //   <div className="viewButton">View</div>
-                // </Link>
-                null
-            )}
+            <Link to={`/${path}/${params.row._id}`} style={{ textDecoration: "none" }}>
+              <div className="viewButton">View</div>
+            </Link>
             
+            <div className="editButton" onClick={() => handleEdit(params.row)}>
+              Edit
+            </div>
+
             {/* 🚀 حذف مشروط بناءً على المسار */}
             {path === "rooms" ? (
               <div className="deleteButton" onClick={() => handleRoomDelete(params.row._id)}>
@@ -186,6 +224,16 @@ const handleRoomDelete = async (id) => {
           getRowId={(row) => row._id}
           loading={loading} // 🚀 إظهار مؤشر التحميل
           autoHeight // 🚀 ضبط الارتفاع تلقائياً بناءً على المحتوى
+        />
+      )}
+
+      {/* 🚀 نافذة التحديث */}
+      {openModal && (
+        <UpdateModal 
+          setOpen={setOpenModal} 
+          type={path} 
+          item={selectedItem} 
+          id={selectedItem._id} 
         />
       )}
     </div>

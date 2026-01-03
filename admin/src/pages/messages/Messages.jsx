@@ -16,7 +16,7 @@ const Messages = () => {
     const fetchUserMessages = async () => {
       setLoading(true); // Set loading state to true before fetching data
       try {
-        const response = await API.get(`http://localhost:8800/api/users/${userId}/messages`);
+        const response = await API.get(`/users/${userId}/messages`);
         setMessages(response.data);
         setLoading(false); // Set loading state to false after successful data fetch
       } catch (err) {

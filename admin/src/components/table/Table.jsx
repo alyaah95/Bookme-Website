@@ -6,23 +6,29 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import React, { useEffect, useState } from "react";
+import API from "../../api/axiosInstance";
 
 import "./table.scss";
 
 const List = ({ userId }) => {
   const [historyBookings, setHistoryBookings] = useState([]);
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchHistoryBookings = async () => {
+      // حماية: لو الـ userId لسه مش موجود (في أول render مثلاً) ميعملش طلب للسيرفر
+      if (!userId) return;
+
       try {
-        const response = await fetch(`http://localhost:8800/api/users/${userId}/historyBookings`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch history bookings");
-        }
-        const data = await response.json();
-        setHistoryBookings(data);
+        // 1. استخدمنا api.get مع المسار النسبي فقط
+        // 2. الـ Base URL والـ Credentials (التوكن) بيتحطوا تلقائياً
+        const response = await API.get(`/users/${userId}/historyBookings`);
+
+        // 3. في Axios الداتا بتكون موجودة جوه response.data ومش محتاجة await response.json()
+        setHistoryBookings(response.data);
       } catch (error) {
-        console.error("Error fetching history bookings:", error.message);
+        // 4. سحب رسالة الخطأ من السيرفر بشكل احترافي
+        const errorMsg = error.response?.data?.message || "Failed to fetch history bookings";
+        console.error("Error fetching history bookings:", errorMsg);
       }
     };
 

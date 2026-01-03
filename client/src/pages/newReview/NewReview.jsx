@@ -4,15 +4,15 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/navbar/Navbar";
 import { AuthContext } from "../../context/AuthContext";
 import './newReview.css';
+import api from '../../utils/api';
+import Swal from 'sweetalert2';
 
 const NewReview = () => {
   const { user } = useContext(AuthContext);
   const userId = user._id;
   const [historyBookings, setHistoryBookings] = useState([]);
   const [review, setReview] = useState({
-    userId: user._id,
     hotelId: '',
-    date: new Date().toISOString().slice(0, 10),
     hotelName: '',
     rating: 0,
     comment: ''
@@ -21,15 +21,15 @@ const NewReview = () => {
 
   useEffect(() => {
     const fetchHistoryBookings = async () => {
+      // حماية: لو الـ userId لسه مش موجود ميعملش طلب
+      if (!userId) return;
+
       try {
-        const response = await fetch(`http://localhost:8800/api/users/${userId}/historyBookings`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch history bookings");
-        }
-        const data = await response.json();
-        setHistoryBookings(data);
+        const response = await api.get(`/users/${userId}/historyBookings`);
+        // Axios بيحط البيانات في response.data تلقائياً
+        setHistoryBookings(response.data);
       } catch (error) {
-        console.error("Error fetching history bookings:", error.message);
+        console.error("Error fetching history bookings:", error.response?.data?.message || error.message);
       }
     };
 
@@ -49,49 +49,59 @@ const NewReview = () => {
 
   const updateUserReviews = async (review) => {
     try {
-      const url = `http://localhost:8800/api/users/${user._id}/reviews`;
-      const basicAuth = 'Basic ' + btoa('lamya:12345');
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': basicAuth,
-          'User-Agent': 'insomnia/8.6.1'
-        },
-        body: JSON.stringify({ userid: user._id, reviewContent: review })
+      // 1. مفيش داعي للـ Basic Auth ولا الـ Headers اليدوية
+      // 2. الـ api instance هيبعت الكوكيز تلقائياً
+      await api.post(`/users/${user._id}/reviews`, { 
+        userid: user._id, 
+        reviewContent: review 
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update user reviews');
-      }
+      console.log("Review updated successfully");
     } catch (error) {
-      console.error('Error updating user reviews:', error);
+      const errorMsg = error.response?.data?.message || "Failed to update user reviews";
+      console.error('Error updating user reviews:', errorMsg);
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const selectedHotel = historyBookings.find(booking => booking.hotelName === review.hotelName);
-    if (!selectedHotel) {
-      alert('Please select a valid hotel');
+    // 1. العثور على الفندق المختار من المصفوفة
+    const selectedBooking = historyBookings.find(b => b.hotelName === review.hotelName);
+    console.log("Selected Hotel from Booking History:",typeof( selectedBooking.ReservationDetails[0].hotelId));
+    
+    if (!selectedBooking) {
+      alert("Please select a hotel first");
       return;
     }
 
-    const updatedReview = {
-      ...review,
-      hotelId: selectedHotel.ReservationDetails[0].hotelId // Assuming ReservationDetails contains hotelId
-    };
+    // 2. التصحيح هنا: الـ hotelId موجود مباشرة في selectedBooking
+    // تأكدي من كتابتها hotelId كما تظهر في الـ console عندك
+    const hotelId = selectedBooking.ReservationDetails[0].hotelId; 
 
-    if (!updatedReview.hotelName || updatedReview.rating === 0 || !updatedReview.comment) {
-      alert('Please fill in all the review fields first');
+    // تأكيد إضافي عشان الطلب ميبوظش لو الـ ID مش موجود
+    if (!hotelId || hotelId === "undefined") {
+      console.error("Hotel ID is missing in the selected booking!", selectedBooking);
+      alert("Error: Hotel ID not found in booking history");
       return;
     }
 
-    updateUserReviews(updatedReview);
-    navigate('/profile');
+    try {
+      // 3. إرسال الطلب بالـ ID الصحيح
+      await api.post(`/reviews/${hotelId}/reviews`, {
+        rating: review.rating,
+        comment: review.comment,
+        // userId السيرفر بيجيبه من التوكن خلاص
+      });
+
+      Swal.fire("Success", "Review added!", "success");
+      navigate('/profile');
+    } catch (error) {
+      console.error("Submission Error:", error.response?.data);
+      // لو لسه بيحولك للوجن، عطل السطر اللي تحت
+      // navigate('/login'); 
+    }
   };
-
   return (
     <div>
       <Navbar />

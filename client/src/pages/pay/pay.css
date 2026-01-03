@@ -1,79 +1,101 @@
-.pay-here { 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  justify-content: center; 
-  height: 100vh; 
-  background-color: #f0f0f0; 
-} 
- 
-.pay-here__title { 
-  font-size: 2.5rem; 
-  margin-bottom: 2rem; 
-} 
- 
-.pay-here__form { 
-  background-color: #fff; 
-  padding: 2rem; 
-  border-radius: 8px; 
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
-  width: 400px; 
-} 
- 
-.pay-here__form-group { 
-  display: flex; 
-  flex-direction: column; 
-  margin-bottom: 1.5rem; 
-} 
- 
-.pay-here__label { 
-  font-size: 1rem; 
-  font-weight: 600; 
-  margin-bottom: 0.5rem; 
-} 
- 
-.pay-here__input { 
-  padding: 0.75rem 1rem; 
-  border: 1px solid #ccc; 
-  border-radius: 4px; 
-  font-size: 1rem; 
-} 
- 
-.pay-here__submit-btn { 
-  background-color: #288fe3; 
-  color: #fff; 
-  border: none; 
-  padding: 0.75rem 1.5rem; 
-  margin-left: 30%; 
-  font-size: 1rem; 
-  border-radius: 4px; 
-  cursor: pointer; 
-  transition: background-color 0.3s ease; 
-} 
- 
-.pay-here__submit-btn:hover { 
-  background-color: #00b35a; 
-} 
- 
-/* Alert message styles */ 
-.alert { 
-  position: fixed; 
-  top: 50%; 
-  left: 50%; 
-  transform: translate(-50%, -50%); 
-  background-color: #ffffff; 
-  border: 1px solid #ccc; 
-  border-radius: 4px; 
-  padding: 1.5rem 2rem; 
-  font-size: 1.2rem; 
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); 
-  z-index: 1000; 
-} 
- 
-.alert-success { 
-  border-color: #28a745; 
-} 
- 
-.alert-error { 
-  border-color: #dc3545; 
+/* Container الأساسي */
+.pay-page-wrapper {
+  background: linear-gradient(135deg, #f6f9fc 0%, #eef2f7 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* الكارت الأبيض الكبير */
+.checkout-card {
+  background: white;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+}
+
+.checkout-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.checkout-header h1 {
+  font-size: 24px;
+  color: #1a1f36;
+  margin-bottom: 8px;
+}
+
+.amount-badge {
+  display: inline-block;
+  background: #f0f4ff;
+  color: #0048ff;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* ستايل حقل Stripe */
+.stripe-input-container {
+  margin: 20px 0;
+}
+
+.stripe-input-container label {
+  display: block;
+  font-size: 14px;
+  color: #4f566b;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.card-element-box {
+  padding: 14px;
+  border: 1px solid #e6ebf1;
+  border-radius: 10px;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.card-element-box:focus-within {
+  border-color: #0048ff;
+  box-shadow: 0 0 0 3px rgba(0, 72, 255, 0.1);
+}
+
+/* الزرار */
+.pay-button {
+  width: 100%;
+  background: #0048ff;
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s ease;
+}
+
+.pay-button:hover {
+  background: #0036cc;
+}
+
+.pay-button:disabled {
+  background: #aab7c4;
+  cursor: not-allowed;
+}
+
+.error-msg {
+  color: #cd3d64;
+  font-size: 13px;
+  margin-top: 12px;
+  text-align: center;
+  background: #fff5f7;
+  padding: 8px;
+  border-radius: 6px;
 }

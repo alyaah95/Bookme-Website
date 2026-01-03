@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../../utils/api';
 import Navbar from "../../components/navbar/Navbar";
 import Header from "../../components/header/Header";
 import MailList from "../../components/mailList/MailList";
@@ -22,7 +23,7 @@ const HolidayOffers = () => {
         // ملاحظة: تأكدي من أن الـ API endpoint هنا مطابق للمسار في الـ Backend
         // إذا كان المسار في الـ Backend هو /hotels/offersData، اتركيها كما هي
         // إذا كان /api/offersData، قومي بتعديلها
-        const response = await axios.get("/hotels/offersData"); 
+        const response = await api.get("/hotels/offersData"); 
         setAllOffersData(response.data);
       } catch (err) {
         setError("Failed to fetch offers. Please try again later.");

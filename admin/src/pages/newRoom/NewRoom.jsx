@@ -14,6 +14,7 @@ const NewRoom = () => {
   const [hotelId, setHotelId] = useState(""); // Initialize with an empty string
   const [rooms, setRooms] = useState("");
   const { data, loading } = useFetch("/hotels");
+  const [loadingRequest, setLoadingRequest] = useState(false);
 
   useEffect(() => {
     // Reset hotelId state whenever the data changes (once data is loaded)
@@ -31,32 +32,43 @@ const NewRoom = () => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    // Validate that all required fields are filled
-    const requiredFields = [...roomInputs.map((input) => input.id), "hotelId", "rooms"];
-    const emptyFields = requiredFields.filter((field) => !info[field] && !hotelId && !rooms);
+    setLoadingRequest(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
-    if (emptyFields.length > 0) {
-      setErrorMessage("Please fill in all the fields.");
+    // 1. التأكد من حقول الـ Inputs (مثل السعر والوصف)
+    const isInfoIncomplete = roomInputs.some((input) => !info[input.id]);
+    
+    // 2. فحص شامل ومنفصل (الصح)
+    if (isInfoIncomplete || !hotelId || !rooms.trim()) {
+      setErrorMessage("Please fill in all the fields correctly.");
+      setLoadingRequest(false);
+      return;
+    }
+    if (isNaN(info.price)) {
+      setErrorMessage("Price must be a number!");
+      setLoadingRequest(false);
       return;
     }
 
-    const roomNumbers = rooms.split(",").map((room) => ({ number: room }));
+    // 3. تحويل النص لمصفوفة أرقام غرف مع تنظيف المسافات
+    // لو الأدمن كتب "101, 102 " الـ trim هيشيل الفراغات
+    const roomNumbers = rooms.split(",").map((room) => ({ number: room.trim() }));
+
     try {
-      await API.post(`/rooms/${hotelId}`, { ...info, roomNumbers, hotelId });
-      // Clear the form and show success message
-      setInfo({}); // Reset the info state
+      setLoadingRequest(true); // ابدأ الـ loading
+      await API.post(`/rooms/${hotelId}`, { ...info, roomNumbers });
+      
+      setSuccessMessage("Room added successfully!");
+      setInfo({});
       setHotelId("");
       setRooms("");
-      setSuccessMessage("Room added successfully!");
-      setErrorMessage(""); // Clear error message
-
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 3000);
+      
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
-      console.log(err);
-      setErrorMessage("Please fill in all the fields.");
+      setErrorMessage(err.response?.data?.message || "Failed to create room.");
+    } finally {
+      setLoadingRequest(false); // وقف الـ loading
     }
   };
 

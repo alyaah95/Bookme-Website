@@ -38,7 +38,7 @@ router.post("/register", createUsers);
 // })
 
 //UPDATE
-router.put("/:id", updateUser);
+router.put("/:id", verifyUser, updateUser);
 
 //DELETE
 router.delete("/:id", verifyUser, deleteUser);

@@ -10,7 +10,8 @@ import {
   getHotels,
   getHotelsByType,
   updateHotel,
-  getAdminHotels
+  getAdminHotels,
+  createPaymentIntent,
 } from "../controllers/hotel.js";
 import { verifyAdmin } from "../utils/verifyToken.js";
 import { getOffersData } from "../controllers/hotel.js"
@@ -23,8 +24,9 @@ router.post("/", verifyAdmin, createHotel);
 router.put("/:id", verifyAdmin, updateHotel);
 //DELETE
 router.delete("/:id", verifyAdmin, deleteHotel);
-//GET
 
+router.get("/admin", getAdminHotels);
+//GET
 router.get("/find/:id", getHotel);
 //GET ALL
 
@@ -36,7 +38,8 @@ router.get("/name", getHotelNames);
 router.get("/offersData", getOffersData);
 router.get("/type/:type", getHotelsByType);
 
-router.get("/admin", getAdminHotels);
+
+router.post("/payment", createPaymentIntent);
 
 
 
