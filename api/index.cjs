@@ -27,6 +27,8 @@ mongoose.connection.on("disconnected", () => {
   console.log("mongoDB disconnected!");
 });
 
+connect();
+
 //middlewares
 app.use(cors({
   origin: "http://localhost:3000", // 🚀 ده لازم يكون الـ Origin بتاع الـ Frontend بتاعك
