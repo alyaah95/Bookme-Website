@@ -64,7 +64,7 @@ const List = ({ userId }) => {
                 <TableCell className="tableCell">{booking.numberOfChildren}</TableCell>
                 <TableCell className="tableCell">{booking.hotelName}</TableCell>
                 <TableCell className="tableCell">{booking.numberOfRooms}</TableCell>
-                <TableCell className="tableCell">{booking.roomNames.join(", ")}</TableCell>
+                <TableCell className="tableCell">{booking.ReservationDetails[0].roomtitle?.join(", ")}</TableCell>
                 <TableCell className="tableCell">{booking.totalCost}</TableCell>
               </TableRow>
             ))}
