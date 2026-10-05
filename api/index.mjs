@@ -34,8 +34,13 @@ app.use(cors({
   origin: true, 
   credentials: true,               
 }));
+
 app.use(cookieParser())
 app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("BookMe Backend API is running!");
+});
 
 app.use("/api/auth", authRoute);
 app.use("/api/users", usersRoute);
@@ -54,9 +59,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(8800, () => {
-  connect();
-  console.log("Connected to backend.");
-});
+// app.listen(8800, () => {
+//   connect();
+//   console.log("Connected to backend.");
+// });
 
 export default app;
