@@ -14,10 +14,10 @@
         background-color: white;
         padding: 30px;
         position: relative;
-        width: 60%; // وسعنا الـ Modal ليشمل الحقول بجانب بعضها
+        width: 60%; 
         max-width: 800px;
         max-height: 90vh;
-        overflow-y: auto; // للسماح بالتمرير إذا كانت الحقول كثيرة
+        overflow-y: auto; 
         border-radius: 12px;
         box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.2);
 
@@ -44,11 +44,11 @@
 
         .formGrid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); // حقلين في كل صف
+            grid-template-columns: repeat(2, 1fr); 
             gap: 20px;
 
             @media (max-width: 600px) {
-                grid-template-columns: 1fr; // حقل واحد في الصف في الشاشات الصغيرة
+                grid-template-columns: 1fr; 
             }
 
             .item {
@@ -57,7 +57,7 @@
                 gap: 5px;
 
                 &.full {
-                    grid-column: span 2; // لجعل الوصف يأخذ الصف كاملاً
+                    grid-column: span 2;
 
                     @media (max-width: 600px) {
                         grid-column: span 1;

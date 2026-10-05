@@ -2,9 +2,9 @@
   "name": "bookingapp",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.mjs"
   },
   "keywords": [],
   "author": "",

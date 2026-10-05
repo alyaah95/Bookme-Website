@@ -20,7 +20,6 @@ const Profile = () => {
     setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
-  // رفع الصورة (كما هو في كودك مع تحديث بسيط للـ Context)
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -42,18 +41,16 @@ const Profile = () => {
     }
   };
 
-  // تحديث البيانات والباسوورد
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
       const res = await api.put(`/users/${user._id}`, info);
       
-      // تحديث الـ Context والـ LocalStorage
       dispatch({ type: "LOGIN_SUCCESS", payload: res.data });
       localStorage.setItem("user", JSON.stringify(res.data));
       
       setEditMode(false);
-      setInfo({}); // تفريغ البيانات المؤقتة
+      setInfo({}); 
       Swal.fire("Updated!", "Your information has been updated.", "success");
     } catch (error) {
       Swal.fire("Error", error.response?.data?.message || "Update failed", "error");
@@ -82,7 +79,6 @@ const Profile = () => {
           </button>
         </div>
 
-        {/* --- وضع التعديل --- */}
         {editMode && (
           <div className="edit-section">
             <h3>Update Your Information</h3>

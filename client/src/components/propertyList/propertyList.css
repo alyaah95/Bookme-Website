@@ -1,30 +1,122 @@
-.pList{
+/* 
+   PROPERTY LIST - MODERN CARD GRID
+   */
+
+.pList {
   width: 100%;
-  max-width: 1024px;
+  max-width: 1200px;
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: var(--spacing-lg);
 }
 
-.pListItem{
-  flex:1;
-  border-radius: 10px;
+.pListItem {
+  flex: 1;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
+  background: var(--white);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  position: relative;
 }
 
-.pListImg{
+.pListItem::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.05) 100%);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+}
+
+.pListItem:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.pListItem:hover::after {
+  opacity: 1;
+}
+
+.pListImg {
   width: 100%;
-  height: 150px;
+  height: 180px;
   object-fit: cover;
+  transition: all var(--transition-slow);
 }
 
-.pListTitles>h1{
-  font-size: 18px;
-  color: #444;
+.pListItem:hover .pListImg {
+  transform: scale(1.05);
 }
 
-.pListTitles>h2{
-  font-size: 14px;
-  font-weight: 300;
+.pListTitles {
+  padding: var(--spacing-md);
+  background: var(--white);
+  position: relative;
+  z-index: 1;
+}
+
+.pListTitles>h1 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-xs);
+  letter-spacing: -0.3px;
+}
+
+.pListTitles>h2 {
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  color: var(--gray);
+}
+
+/* 
+   RESPONSIVE DESIGN
+   */
+
+@media (max-width: 1024px) {
+  .pList {
+    gap: var(--spacing-md);
+  }
+
+  .pListImg {
+    height: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pList {
+    flex-wrap: wrap;
+  }
+
+  .pListItem {
+    flex: 1 1 calc(50% - var(--spacing-sm));
+    min-width: calc(50% - var(--spacing-sm));
+  }
+}
+
+@media (max-width: 480px) {
+  .pList {
+    flex-direction: column;
+  }
+
+  .pListItem {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .pListImg {
+    height: 200px;
+  }
+
+  .pListTitles>h1 {
+    font-size: var(--font-size-base);
+  }
 }

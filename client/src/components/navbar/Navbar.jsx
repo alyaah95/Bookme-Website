@@ -11,11 +11,6 @@ const Navbar = () => {
   const { user,dispatch } = useContext(AuthContext);
  
 
-
-
-
-
-  
   //const userId =user._id;
   //const [image, setImage] = useState();
   

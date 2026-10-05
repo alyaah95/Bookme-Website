@@ -43,8 +43,8 @@ router.put("/:id", verifyUser, updateUser);
 //DELETE
 router.delete("/:id", verifyUser, deleteUser);
 
-router.get("/admin", getAdminUsers); // 🚀 New endpoint for admin users list
-router.get("/:id/adminHistoryBookings", getAdminUserHistoryBookings); // 🚀 New endpoint for admin user history bookings
+router.get("/admin", getAdminUsers); // New endpoint for admin users list
+router.get("/:id/adminHistoryBookings", getAdminUserHistoryBookings); //  New endpoint for admin user history bookings
  
 //GET
 router.get("/:id", getUser);

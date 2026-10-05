@@ -3,6 +3,7 @@ import {
   faCircleArrowRight,
   faCircleXmark,
   faLocationDot,
+  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext, useState } from "react";
@@ -39,7 +40,6 @@ const Hotel = () => {
   useEffect(() => {
     const fetchHotelReviews = async () => {
       try {
-        // جلب كل التقييمات الخاصة بهذا الفندق بالذات
         const res = await api.get(`/reviews/${id}/reviews`); 
         setReviews(res.data);
       } catch (err) {
@@ -164,12 +164,31 @@ const Hotel = () => {
           </div>
           <div className="hotelReviews">
             <h3>Guest Reviews</h3>
-            {reviews.map((rev) => (
+            {reviews && reviews.length > 0 ? (reviews.map((rev) => (
               <div key={rev._id} className="reviewCard">
                 <div className="userInfo">
-                  {/* بفضل الـ populate اللي عملناه في الباك أند */}
-                  <img src={rev.userId.img || "/no-avatar.png"} alt="" />
-                  <span>{rev.userId.username}</span>
+                  {rev.userId?.img && rev.userId.img !== "" && rev.userId.img !== "null" ? (
+                    <img 
+                      src={rev.userId.img} 
+                      alt="" 
+                      onError={(e) => {
+                        e.target.style.display = 'none'; 
+                        e.target.nextSibling.style.display = 'flex'; 
+                      }}
+                    />
+                  ) : null}
+
+                  {(!rev.userId?.img || rev.userId.img === "" || rev.userId.img === "null") && (
+                    <div className="userIconFallback">
+                      <FontAwesomeIcon icon={faUser} />
+                    </div>
+                  )}
+
+                  <div className="userIconFallback" style={{ display: 'none' }}>
+                    <FontAwesomeIcon icon={faUser} />
+                  </div>
+
+                  <span>{rev.userId?.username || "Guest User"}</span>
                 </div>
                 <div className="stars">
                   {[...Array(rev.rating)].map((_, i) => <FaStar key={i} />)}
@@ -177,7 +196,13 @@ const Hotel = () => {
                 <p>{rev.comment}</p>
                 <small>{new Date(rev.createdAt).toDateString()}</small>
               </div>
-            ))}
+            ))) : (
+              <div className="noReviews">
+                <p>No reviews yet. Book now and be the first to review this hotel!</p>
+              </div>
+            )}
+            
+            
           </div>
         </div>
       )}

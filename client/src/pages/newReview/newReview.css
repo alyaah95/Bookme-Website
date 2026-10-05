@@ -1,54 +1,241 @@
-/* newReview.css */
-
+/*  NEW REVIEW CONTAINER  */
 .new-review-container {
-  max-width: 600px;
-  margin: 25px auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 40px;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.new-review-container:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .new-review-container h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 32px;
+  font-size: 32px;
+  font-weight: 700;
+  color: #333;
+  padding-bottom: 16px;
+  border-bottom: 2px solid;
+  border-image: linear-gradient(90deg, #2196f3, #fed402) 1;
 }
 
+/*  FORM STYLES  */
 .new-review-container form {
   display: flex;
   flex-direction: column;
+  gap: 24px;
 }
 
 .new-review-container label {
-  margin-bottom: 5px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 8px;
+  display: block;
 }
 
 .new-review-container select,
 .new-review-container textarea {
   width: 100%;
-  padding: 5px;
-  margin-bottom: 10px;
+  padding: 14px 16px;
+  margin-bottom: 0;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background-color: white;
 }
 
+.new-review-container select:focus,
+.new-review-container textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.new-review-container select:hover,
+.new-review-container textarea:hover {
+  border-color: #2196f3;
+}
+
+.new-review-container textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/*  RATING STARS  */
 .new-review-container .rating {
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  gap: 12px;
+  padding: 20px 0;
+  margin: 10px 0;
+  background-color: #f8f9fa;
+  border-radius: 10px;
 }
 
 .new-review-container .star {
-  color: #ccc;
-  font-size: 24px;
+  color: #ddd;
+  font-size: 36px;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.new-review-container .selected {
-  color: #ffc107;
+.new-review-container .star:hover {
+  transform: scale(1.2);
+  color: #fed402;
 }
-.End_Page{
-  margin-top: 50px;
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 30px;
-}  
+
+.new-review-container .star.selected {
+  color: #fed402;
+  transform: scale(1.1);
+}
+
+/*  SUBMIT BUTTON  */
+.new-review-container form button[type="submit"] {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.25);
+  letter-spacing: 0.3px;
+  margin-top: 8px;
+}
+
+.new-review-container form button[type="submit"]:hover {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.35);
+  transform: translateY(-2px);
+}
+
+.new-review-container form button[type="submit"]:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.25);
+}
+
+/*  END PAGE  */
+.End_Page {
+  margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+/*  RESPONSIVE DESIGN  */
+
+/* Tablet (768px - 1024px) */
+@media screen and (max-width: 1024px) {
+  .new-review-container {
+    max-width: 650px;
+    padding: 35px;
+  }
+
+  .new-review-container h2 {
+    font-size: 28px;
+  }
+}
+
+/* Small Tablet (600px - 768px) */
+@media screen and (max-width: 768px) {
+  .new-review-container {
+    margin: 30px 16px;
+    padding: 30px;
+  }
+
+  .new-review-container h2 {
+    font-size: 26px;
+  }
+
+  .new-review-container .star {
+    font-size: 32px;
+  }
+}
+
+/* Mobile (up to 600px) */
+@media screen and (max-width: 600px) {
+  .new-review-container {
+    margin: 20px 12px;
+    padding: 24px;
+  }
+
+  .new-review-container h2 {
+    font-size: 24px;
+    margin-bottom: 24px;
+  }
+
+  .new-review-container form {
+    gap: 20px;
+  }
+
+  .new-review-container label {
+    font-size: 14px;
+  }
+
+  .new-review-container select,
+  .new-review-container textarea {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .new-review-container .rating {
+    gap: 8px;
+    padding: 16px 0;
+  }
+
+  .new-review-container .star {
+    font-size: 28px;
+  }
+
+  .new-review-container form button[type="submit"] {
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+
+  .End_Page {
+    margin-top: 50px;
+    gap: 30px;
+  }
+}
+
+/* Extra Small Mobile (up to 375px) */
+@media screen and (max-width: 375px) {
+  .new-review-container {
+    padding: 20px;
+  }
+
+  .new-review-container h2 {
+    font-size: 22px;
+  }
+
+  .new-review-container .star {
+    font-size: 24px;
+  }
+}

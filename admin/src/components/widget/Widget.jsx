@@ -15,7 +15,6 @@ const Widget = ({ type }) => {
   useEffect(() => {
     const getUsers = async () => {
       try {
-        // نستخدم API.get والمسار النسبي فقط
         const res = await API.get("/users");
         setUserCount(res.data.length);
       } catch (error) {

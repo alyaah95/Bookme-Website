@@ -26,7 +26,7 @@ const HistoryBookings = () => {
   
     useEffect(() => {
         const fetchcurrentBookings = async () => {
-            if (!userId) return; // تأمين الكود لو الـ userId لسه مش موجود
+            if (!userId) return; 
             try {
                 const response = await api.get(`/users/${userId}/currentBookings`);
                 setcurrentBookings(response.data);
@@ -37,7 +37,6 @@ const HistoryBookings = () => {
         fetchcurrentBookings();
     }, [userId]);
 
-    // جلب تاريخ الحجوزات
     useEffect(() => {
         const fetchhistoryBookings = async () => {
             if (!userId) return;
@@ -52,20 +51,16 @@ const HistoryBookings = () => {
     }, [userId]);
 
     function isBookingOld(booking) {
-        // التأكد من تحويل التاريخ بشكل سليم
         const toDate = new Date(booking.toDate).getTime();
-        const currentDate = new Date().setHours(0, 0, 0, 0); // بداية اليوم الحالي
+        const currentDate = new Date().setHours(0, 0, 0, 0); 
         
         return toDate < currentDate;
     };
 
-    // إضافة حجز للتاريخ
     const addHistoryBookingCard = async (bookingCard) => {
         try {
-            // في الـ POST بنبعت الـ body مباشرة كتاني parameter
             await api.post(`/users/${userId}/historybookings`, { bookingCard });
 
-            // لو العملية نجحت، هنحذف الحجز من الحالي
             await removeCurrentBookingFromUser(bookingCard._id);
             console.log("This booking became old:", bookingCard);
             
@@ -74,10 +69,8 @@ const HistoryBookings = () => {
         }
     };
 
-    // حذف حجز من القائمة الحالية
     const removeCurrentBookingFromUser = async (bookingId) => {
         try {
-            // في الـ DELETE بنحط الـ body جوه object اسمه data
             const response = await api.delete(`/users/${userId}/currentbookings`, {
                 data: { bookingId }
             });

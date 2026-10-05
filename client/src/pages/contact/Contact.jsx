@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState , useEffect, useRef } from "react";
 import Footer from '../../components/footer/Footer';
 import Header from "../../components/header/Header";
 import MailList from "../../components/mailList/MailList";
@@ -14,6 +14,8 @@ const Contact = () => {
         message: ''
     });
     const { user, loading, error } = useContext(AuthContext);
+    const [localError, setLocalError] = useState(null); 
+    const errorRef = useRef(null);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -23,24 +25,46 @@ const Contact = () => {
         }));
     };
 
+    useEffect(() => {
+        if (localError) {
+            errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, [localError]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLocalError(null);
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        // التحقق من وجود المستخدم قبل بدء أي عملية (Client-side validation)
+        if (!formData.name.trim()) {
+            setLocalError({ message: 'Please enter your name.' });
+            return;
+        }
+
+        if (!formData.email.trim()) {
+        setLocalError({ message: 'Please enter your email address.' });
+            return;
+        } else if (!emailRegex.test(formData.email)) {
+            setLocalError({ message: 'Please enter a valid email address (e.g., name@example.com).' });
+            return;
+        }
+
+        if (!formData.message.trim()) {
+            setLocalError({ message: 'Please type a message before sending.' });
+            return;
+        }
+
         if (!user || !user._id) {
-            alert('User not found, please login or register first.');
+            setLocalError({ message: 'User session not found, please login or register first.' });
             return;
         }
 
         try {
-            // استخدام api.post مباشرة
-            // لا نحتاج لعمل JSON.stringify، أكسيوس يقوم بذلك تلقائياً
+
             await api.post(`/users/${user._id}/messages`, formData);
 
-            // إذا وصل الكود هنا، فهذا يعني أن الاستجابة كانت ناجحة (Status 200)
             alert('Thank you for your message. We will get back to you shortly.');
             
-            // إعادة تعيين الفورم
             setFormData({
                 name: '',
                 email: '',
@@ -48,16 +72,15 @@ const Contact = () => {
             });
 
         } catch (err) {
-            // سحب رسالة الخطأ القادمة من الباك أند (Server-side error message)
             const errorMsg = err.response?.data?.message || 'There was an error sending your message.';
+            
             
             console.error("Message Error:", errorMsg);
 
-            // معالجة خطأ انتهاء الجلسة أو عدم الصلاحية (401 أو 403)
             if (err.response?.status === 401 || err.response?.status === 403) {
-                alert('Your session might have expired. Please login again.');
+                setLocalError({ message: 'Your session has expired. Please login again.' });
             } else {
-                alert(errorMsg);
+                setLocalError({ message: errorMsg });
             }
         }
     };
@@ -66,7 +89,7 @@ const Contact = () => {
       <div>
         <Navbar />
         <Header type={"list"} />
-        <form className="contact-form" onSubmit={handleSubmit}>
+        <form className="contact-form" onSubmit={handleSubmit} noValidate>
             <h2>Contact Us</h2>
             <label htmlFor="name">Name</label>
             <input
@@ -95,7 +118,11 @@ const Contact = () => {
                 required
             ></textarea>
             <button disabled={loading} className="3Button">Send</button>
-            {error && <span>{error.message}</span>}
+            {localError && (
+                <span ref={errorRef} className="error-message">
+                    {localError.message}
+                </span>
+            )}
         </form>
         <div className="End_Page">
           <MailList />

@@ -3,17 +3,17 @@ import { addDays } from "date-fns";
 
 const INITIAL_STATE = {
   city: undefined,
-  dates: [ // هنا التعديل
+  dates: [ 
     {
       startDate: new Date(),
-      endDate: addDays(new Date(), 1), // تاريخ اليوم التالي
+      endDate: addDays(new Date(), 1), 
       key: "selection",
     },
   ],
   options: {
-    adult: undefined, // ممكن تحطي قيمة افتراضية هنا برضه لو عايزة، مثلاً 1
-    children: undefined, // أو 0
-    room: undefined,     // أو 1
+    adult: undefined, 
+    children: undefined, 
+    room: undefined,     
     type:undefined
   }
 };

@@ -49,19 +49,15 @@ const Login = () => {
 
   const handleSendOTP = async () => {
         try {
-            // ننتظر الرد من السيرفر
             const res = await API.post("/auth/forgot-password", { email });
             
-            // لو الرد نجح (Status 200)
             if (res.status === 200) {
-                setForgotStep(2); // انقل للخطوة التانية
+                setForgotStep(2);
                 Swal.fire("Success", "OTP sent to your email!", "success");
             }
         } catch (err) {
-            // لو الإيميل وهمي أو مش موجود، الكود هيدخل هنا
             const errMsg = err.response?.data?.message || "Something went wrong!";
             Swal.fire("Error", errMsg, "error");
-            // هنا مش بنغير الـ step فالمستخدم هيفضل في مكانه
         }
     };
 
@@ -73,9 +69,9 @@ const Login = () => {
             const res = await API.post("/auth/reset-password", { email, otp, newPassword });
             if (res.status === 200) {
                 Swal.fire("Success", "Password updated successfully!", "success");
-                setShowForgot(false); // اقفل المودال تماماً
-                setForgotStep(1);     // رجع الخطوات للأول عشان لو فتح تاني
-                setOtp("");           // صفر الداتا
+                setShowForgot(false); 
+                setForgotStep(1);     
+                setOtp("");           
             }
         } catch (err) {
             const errMsg = err.response?.data?.message || "Invalid OTP or expired";
@@ -115,7 +111,6 @@ const Login = () => {
               <div className="modalContent">
                   <h2>Reset Password</h2>
                   
-                  {/* خطوة 1: طلب الكود */}
                   {forgotStep === 1 && (
                       <div style={{display:"flex", flexDirection:"column", gap:"10px"}}>
                           <p>Enter your email to receive a code</p>
@@ -126,7 +121,6 @@ const Login = () => {
                       </div>
                   )}
 
-                  {/* خطوة 2: إدخال الكود والباسوورد - مش هتظهر إلا لو نجحت خطوة 1 */}
                   {forgotStep === 2 && (
                       <div style={{display:"flex", flexDirection:"column", gap:"10px"}}>
                           <p>Enter the code sent to <b>{email}</b></p>

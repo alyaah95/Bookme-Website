@@ -17,9 +17,7 @@ export const createReview = async (req, res, next) => {
     const user = await User.findById(userId);
     if (!user) return next(createError(404, "User not found!"));
 
-    // --- تعديل المقارنة لتطابق هيكل البيانات الفعلي ---
     const hasStayed = user.HistoryBookings.some(booking => {
-      // إذا كان الـ hotelId داخل ReservationDetails كما في الفرونت أند:
       const idInHistory = booking.ReservationDetails?.[0]?.hotelId || booking.hotelId;
       
       
@@ -27,7 +25,6 @@ export const createReview = async (req, res, next) => {
     });
 
     if (!hasStayed) {
-      // هذا الخطأ 403 هو ما يجعلك تذهبين لصفحة الـ Login في الفرونت أند
       return next(createError(403, "You must stay at the hotel to review it!"));
     }
 
@@ -48,7 +45,6 @@ export const createReview = async (req, res, next) => {
 };
 export const getHotelReviews = async (req, res, next) => {
   try {
-    // جلب كل الريفيوهات للفندق مع عمل populate لبيانات اليوزر (اسمه وصورته)
     const reviews = await Review.find({ hotelId: req.params.id })
                                 .populate("userId", "username img");
     

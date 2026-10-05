@@ -29,7 +29,7 @@ const List = () => {
   const handleOptionChange = (name, value) => {
     setOptions((prev) => ({
       ...prev,
-      [name]: parseInt(value) || 0, // تحويل القيمة لرقم والتأكد إنها مش هتكون NaN لو فاضية
+      [name]: parseInt(value) || 0, 
     }));
   };
   const { data, loading, reFetch } = useFetch(
@@ -152,10 +152,8 @@ const List = () => {
             ) : (
               <>
                 {data && data.length > 0 ? (
-                  // لو فيه بيانات ورجعت فنادق (طول المصفوفة أكبر من صفر)
                   data.map((item) => <SearchItem item={item} key={item._id} />)
                 ) : (
-                  // لو مفيش بيانات أو المصفوفة فاضية (يعني مفيش نتائج)
                   <div className="noResultsMessage">
                     <h2>No hotels found for "{destination}"</h2>
                     <p>

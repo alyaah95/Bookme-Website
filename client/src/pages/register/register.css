@@ -1,37 +1,211 @@
+/*  REGISTER CONTAINER */
 .register {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.rContainer {
+.regContainer {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
+    width: 100%;
+    max-width: 800px;
+    padding: 40px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.rInput{
-    height: 30px;
-    padding: 10px;
+.rFormGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
 }
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Add a header for consistency */
+.regContainer::before {
+    content: "Create Your Account";
+    display: block;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid;
+    border-image: linear-gradient(90deg, #2196f3, #fed402) 1;
+}
+
+/*  INPUT FIELDS  */
+.rInput {
+    height: auto;
+    padding: 14px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.rInput:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.rInput:hover {
+    border-color: #2196f3;
+}
+
+.rInput::placeholder {
+    color: #999;
+}
+
+/*  REGISTER BUTTON  */
 .rButton {
     border: none;
-    padding: 10px 20px;
-    background-color: #0071c2;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
     color: white;
-    font-weight: bold;
+    font-weight: 700;
+    font-size: 16px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.25);
+    letter-spacing: 0.3px;
+    margin-top: 8px;
 }
 
-.rButton:disabled{
-    background-color: #0071c28c;
+.rButton:hover {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.35);
+    transform: translateY(-2px);
+}
+
+.rButton:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.25);
+}
+
+.rButton:disabled {
+    background: linear-gradient(135deg, #b0bec5 0%, #90a4ae 100%);
     cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
 }
 
+/*  ERROR MESSAGE  */
 .error-message {
-    color: red;
-    margin-top: 10px;
-    font-size: 14px; }
+    color: #d32f2f;
+    background-color: #ffebee;
+    padding: 12px 16px;
+    border-left: 4px solid #d32f2f;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/*  RESPONSIVE DESIGN  */
+
+/* Tablet (768px - 1024px) */
+@media screen and (max-width: 1024px) {
+    .regContainer {
+        max-width: 480px;
+        padding: 35px;
+    }
+
+    .regContainer::before {
+        font-size: 26px;
+    }
+}
+
+/* Small Tablet (600px - 768px) */
+@media screen and (max-width: 768px) {
+    .register {
+        padding: 30px 16px;
+    }
+
+    .regContainer {
+        max-width: 450px;
+        padding: 30px;
+    }
+
+    .regContainer::before {
+        font-size: 24px;
+    }
+}
+
+/* Mobile (up to 600px) */
+@media screen and (max-width: 600px) {
+    .register {
+        padding: 24px 12px;
+    }
+
+    .regContainer {
+        max-width: 100%;
+        padding: 24px;
+        gap: 16px;
+    }
+
+    .regContainer::before {
+        font-size: 22px;
+    }
+
+    .rInput {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    .rButton {
+        padding: 12px 20px;
+        font-size: 15px;
+    }
+}
+
+/* Extra Small Mobile (up to 375px) */
+@media screen and (max-width: 375px) {
+    .regContainer {
+        padding: 20px;
+    }
+
+    .regContainer::before {
+        font-size: 20px;
+    }
+
+    .rInput {
+        font-size: 13px;
+    }
+}

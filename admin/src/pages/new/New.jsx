@@ -18,19 +18,15 @@ const New = ({ inputs, title }) => {
   };
 
   const validate = () => {
-    // 1. التأكد من كل الحقول
     for (let input of inputs) {
       if (!info[input.id]) return `Field "${input.label}" is required.`;
     }
 
-    // 2. فحص الإيميل
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (info.email && !emailRegex.test(info.email)) return "Invalid email format.";
 
-    // 3. فحص الباسورد (مثلاً لا يقل عن 6 أرقام)
     if (info.password && info.password.length < 6) return "Password must be at least 6 characters.";
 
-    // 4. فحص رقم الهاتف (لو موجود)
     if (info.phone && info.phone.length < 10) return "Please enter a valid phone number.";
 
     return null;
@@ -42,7 +38,6 @@ const New = ({ inputs, title }) => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    // تشغيل الفحص
     const validationError = validate();
     if (validationError) {
       setErrorMessage(validationError);
@@ -53,7 +48,6 @@ const New = ({ inputs, title }) => {
     try {
       let url = "https://i.ibb.co/MBtjqXQ/no-avatar.gif";
 
-      // لو فيه ملف، ارفعه الأول
       if (file) {
         const data = new FormData();
         data.append("file", file);
@@ -67,7 +61,6 @@ const New = ({ inputs, title }) => {
 
       const newUser = { ...info, img: url };
 
-      // إرسال الطلب (كود واحد لكل الحالات)
       await API.post("/auth/register", newUser);
 
       setSuccessMessage("User added successfully!");
@@ -78,7 +71,6 @@ const New = ({ inputs, title }) => {
     } catch (err) {
       let msg = "Something went wrong!";
       
-      // فحص إذا كان الخطأ هو تكرار بيانات (Duplicate Key)
       if (err.response?.data?.message?.includes("E11000")) {
         if (err.response.data.message.includes("email")) {
           msg = "This email is already in use. Please try another one.";
@@ -88,7 +80,6 @@ const New = ({ inputs, title }) => {
           msg = "This record already exists.";
         }
       } else {
-        // لو فيه رسالة تانية جاية من السيرفر
         msg = err.response?.data?.message || "Failed to connect to server.";
       }
 
@@ -138,7 +129,6 @@ const New = ({ inputs, title }) => {
                     placeholder={input.placeholder}
                     id={input.id}
                     value={info[input.id] || ""}
-                    // إضافة تلميح بصري لو الحقل مطلوب
                     required
                   />
                 </div>

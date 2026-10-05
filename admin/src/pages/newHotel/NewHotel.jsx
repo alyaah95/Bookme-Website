@@ -25,14 +25,12 @@ const NewHotel = () => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    // 1. التأكد من الصور (على الأقل صورة واحدة)
     if (!files || files.length === 0) {
       setErrorMessage("Please upload at least one image.");
       setLoading(false);
       return;
     }
 
-    // 2. التأكد من كل الحقول
     const requiredFields = hotelInputs.map((input) => input.id);
     const isAnyFieldEmpty = requiredFields.some((field) => !info[field]);
 
@@ -42,7 +40,6 @@ const NewHotel = () => {
       return;
     }
 
-    // 3. التأكد إن السعر رقم موجب
     if (info.cheapestPrice && isNaN(info.cheapestPrice) || info.cheapestPrice <= 0) {
       setErrorMessage("Price must be a valid positive number.");
       setLoading(false);
@@ -50,7 +47,6 @@ const NewHotel = () => {
     }
 
     try {
-      // رفع الصور (الكود بتاعك ممتاز هنا)
       const list = await Promise.all(
         Object.values(files).map(async (file) => {
           const data = new FormData();
@@ -68,14 +64,12 @@ const NewHotel = () => {
         ...info,
         rooms,
         photos: list,
-        // تحويل السعر لرقم لضمان عدم حدوث مشاكل في البحث
         cheapestPrice: Number(info.cheapestPrice), 
       };
 
       await API.post("/hotels", newhotel);
       setSuccessMessage("Hotel added successfully!");
       
-      // تنظيف الفورم
       setInfo({});
       setFiles("");
       setRooms([]);

@@ -15,16 +15,13 @@ const ReviewList = () => {
 
   useEffect(() => {
     const fetchHistoryBookings = async () => {
-      // تأمين الطلب: لو الـ userId مش موجود ميبعتش طلب للسيرفر ويطلع error
       if (!userId) return;
 
       try {
-        // 1. استخدمنا api.get والمسار المختصر فقط
-        // 2. مفيش خطوة response.json() لأن Axios بيعملها لوحده
+
         const response = await api.get(`/users/${userId}/historyBookings`);
         setHistoryBookings(response.data);
       } catch (error) {
-        // 3. طريقة احترافية لسحب رسالة الخطأ من الباك أند
         const msg = error.response?.data?.message || "Failed to fetch history bookings";
         console.error("History Bookings Error:", msg);
       }

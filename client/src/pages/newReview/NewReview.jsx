@@ -21,12 +21,10 @@ const NewReview = () => {
 
   useEffect(() => {
     const fetchHistoryBookings = async () => {
-      // حماية: لو الـ userId لسه مش موجود ميعملش طلب
       if (!userId) return;
 
       try {
         const response = await api.get(`/users/${userId}/historyBookings`);
-        // Axios بيحط البيانات في response.data تلقائياً
         setHistoryBookings(response.data);
       } catch (error) {
         console.error("Error fetching history bookings:", error.response?.data?.message || error.message);
@@ -49,8 +47,7 @@ const NewReview = () => {
 
   const updateUserReviews = async (review) => {
     try {
-      // 1. مفيش داعي للـ Basic Auth ولا الـ Headers اليدوية
-      // 2. الـ api instance هيبعت الكوكيز تلقائياً
+
       await api.post(`/users/${user._id}/reviews`, { 
         userid: user._id, 
         reviewContent: review 
@@ -66,7 +63,6 @@ const NewReview = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. العثور على الفندق المختار من المصفوفة
     const selectedBooking = historyBookings.find(b => b.hotelName === review.hotelName);
     console.log("Selected Hotel from Booking History:",typeof( selectedBooking.ReservationDetails[0].hotelId));
     
@@ -75,11 +71,9 @@ const NewReview = () => {
       return;
     }
 
-    // 2. التصحيح هنا: الـ hotelId موجود مباشرة في selectedBooking
-    // تأكدي من كتابتها hotelId كما تظهر في الـ console عندك
+
     const hotelId = selectedBooking.ReservationDetails[0].hotelId; 
 
-    // تأكيد إضافي عشان الطلب ميبوظش لو الـ ID مش موجود
     if (!hotelId || hotelId === "undefined") {
       console.error("Hotel ID is missing in the selected booking!", selectedBooking);
       alert("Error: Hotel ID not found in booking history");
@@ -87,19 +81,16 @@ const NewReview = () => {
     }
 
     try {
-      // 3. إرسال الطلب بالـ ID الصحيح
       await api.post(`/reviews/${hotelId}/reviews`, {
         rating: review.rating,
         comment: review.comment,
-        // userId السيرفر بيجيبه من التوكن خلاص
       });
 
       Swal.fire("Success", "Review added!", "success");
       navigate('/profile');
     } catch (error) {
       console.error("Submission Error:", error.response?.data);
-      // لو لسه بيحولك للوجن، عطل السطر اللي تحت
-      // navigate('/login'); 
+
     }
   };
   return (

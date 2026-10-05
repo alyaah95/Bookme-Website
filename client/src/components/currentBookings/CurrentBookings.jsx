@@ -26,15 +26,12 @@ const CurrentBookings = () => {
 
     const removeCurrentBookingFromUser = async (bookingId) => {
         try {
-            // نرسل فقط المسار المتغير، الـ Base URL هيضاف تلقائياً
             const response = await api.delete(`/users/${userId}/currentbookings`, {
                 data: { bookingId: bookingId } 
             });
 
-            // Axios يعيد البيانات جاهزة في response.data ولا نحتاج response.json()
             return response.data;
         } catch (error) {
-            // التعامل مع الخطأ بشكل احترافي
             const message = error.response?.data?.message || 'Failed to remove booking';
             console.error("Delete Booking Error:", message);
             throw new Error(message);
@@ -47,7 +44,7 @@ const CurrentBookings = () => {
                 data: { roomDetails, dates }
             });
 
-            console.log(response.data); // Output: 'Selected dates have been deleted...'
+            console.log(response.data); 
             return response.data;
         } catch (error) {
             const message = error.response?.data?.message || 'Failed to delete dates from rooms';
@@ -70,16 +67,12 @@ const CurrentBookings = () => {
     };
 
     useEffect(() => {
-        // يفضل دائماً تعريف الدالة داخل الـ useEffect لو مش هتستخدميها بره
         const fetchcurrentBookings = async () => {
             try {
-                // باستخدام axios instance (api)
                 const response = await api.get(`/users/${userId}/currentBookings`);
                 
-                // Axios بيعمل JSON.parse تلقائياً، الداتا موجودة في response.data
                 setCurrentBookings(response.data);
             } catch (error) {
-                // سحب رسالة الخطأ من السيرفر لو موجودة، وإلا عرض رسالة افتراضية
                 const errorMsg = error.response?.data?.message || 'Failed to fetch current bookings';
                 console.error('Error fetching current bookings:', errorMsg);
             }

@@ -1,6 +1,6 @@
 import axios from "axios";
 import api from './../../utils/api';
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import "./login.css";
@@ -19,8 +19,16 @@ const Login = () => {
     const [newPassword, setNewPassword] = useState("");
 
     const { loading, errorL, dispatch } = useContext(AuthContext);
+    const loginErrorRef = useRef(null);
+    const [forgotError, setForgotError] = useState(null);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (errorL) {
+            loginErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, [errorL]);
 
     const handleChange = (e) => {
         setCredentials((prev) => ({ ...prev, [e.target.id]: e.target.value }));
@@ -50,38 +58,60 @@ const Login = () => {
     };
 
     const handleSendOTP = async () => {
+        setForgotError(null);
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!email.trim()) {
+            setForgotError("Please enter your email.");
+            return;
+        } 
+        if (!emailRegex.test(email)) {
+            setForgotError("Please enter a valid email format (e.g. name@gmail.com).");
+            return;
+        }
+
         try {
-            // ننتظر الرد من السيرفر
             const res = await api.post("/auth/forgot-password", { email });
             
-            // لو الرد نجح (Status 200)
             if (res.status === 200) {
-                setForgotStep(2); // انقل للخطوة التانية
+                setForgotStep(2); 
+                setForgotError(null);
                 Swal.fire("Success", "OTP sent to your email!", "success");
             }
         } catch (err) {
-            // لو الإيميل وهمي أو مش موجود، الكود هيدخل هنا
             const errMsg = err.response?.data?.message || "Something went wrong!";
-            Swal.fire("Error", errMsg, "error");
-            // هنا مش بنغير الـ step فالمستخدم هيفضل في مكانه
+            setForgotError(errMsg);
         }
     };
 
     const handleResetPassword = async () => {
-        if (!otp || !newPassword) {
-            return Swal.fire("Error", "All fields are required!", "error");
+        setForgotError(null);
+        if (!otp.trim()) {
+            setForgotError("Please enter the OTP code sent to your email.");
+            return;
+        }
+
+        if (!newPassword.trim()) {
+            setForgotError("Please enter your new password.");
+            return;
+        } 
+        if (newPassword.length < 6) {
+            setForgotError("New password must be at least 6 characters long.");
+            return;
         }
         try {
             const res = await api.post("/auth/reset-password", { email, otp, newPassword });
             if (res.status === 200) {
                 Swal.fire("Success", "Password updated successfully!", "success");
-                setShowForgot(false); // اقفل المودال تماماً
-                setForgotStep(1);     // رجع الخطوات للأول عشان لو فتح تاني
-                setOtp("");           // صفر الداتا
+                setShowForgot(false); 
+                setForgotStep(1);     
+                setOtp("");
+                setNewPassword("");
+                setForgotError(null);           
             }
         } catch (err) {
             const errMsg = err.response?.data?.message || "Invalid OTP or expired";
-            Swal.fire("Error", errMsg, "error");
+            setForgotError(errMsg);
         }
     };
 
@@ -108,33 +138,30 @@ const Login = () => {
                 <button disabled={loading} onClick={handleClick} className="lButton">
                     Login
                 </button>
-                {/* رابط نسيت كلمة المرور */}
                 <span className="forgotLink" onClick={() => setShowForgot(true)}>
                     Forgot Password?
                 </span>
                 <button disabled={loading} onClick={() => navigate("/register")} className="lButton">
                     Sign Up
                 </button>
-                {errorL && <span className="error-message">{errorL.message}</span>}
+                {errorL && <span ref={loginErrorRef} className="error-message">{errorL.message}</span>}
+                
             </div>
-            {/* Modal "نسيت كلمة المرور" */}
             {showForgot && (
                 <div className="modalOverlay">
                     <div className="modalContent">
                         <h2>Reset Password</h2>
-                        
-                        {/* خطوة 1: طلب الكود */}
+                        {forgotError && <span className="error-message">{forgotError}</span>}
                         {forgotStep === 1 && (
                             <div style={{display:"flex", flexDirection:"column", gap:"10px"}}>
                                 <p>Enter your email to receive a code</p>
                                 <input type="email" placeholder="Email" className="lInput" 
                                     onChange={(e) => setEmail(e.target.value)} />
                                 <button className="lButton" onClick={handleSendOTP}>Send Code</button>
-                                <button className="closeBtn" onClick={() => setShowForgot(false)}>Cancel</button>
+                                <button className="closeBtn" onClick={() => {setShowForgot(false); setForgotError(null);}}>Cancel</button>
                             </div>
                         )}
 
-                        {/* خطوة 2: إدخال الكود والباسوورد - مش هتظهر إلا لو نجحت خطوة 1 */}
                         {forgotStep === 2 && (
                             <div style={{display:"flex", flexDirection:"column", gap:"10px"}}>
                                 <p>Enter the code sent to <b>{email}</b></p>

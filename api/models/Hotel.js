@@ -52,7 +52,7 @@ const HotelSchema = new mongoose.Schema({
     {
       title: String,
       brief: String,
-      details: String,  // Corrected the typo from 'detials' to 'details'
+      details: String,  
       offerKind:String,
     }
   ]

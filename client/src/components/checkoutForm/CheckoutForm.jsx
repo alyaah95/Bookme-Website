@@ -17,20 +17,25 @@ const CheckoutForm = ({ bookingAmount, bookingDetails }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
-      const res = await api.post("/hotels/payment", { amount: bookingAmount });
+      const res = await api.post("/hotels/payment", { 
+        amount: Math.round(bookingAmount) 
+      });
       const { clientSecret } = res.data;
 
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: { card: elements.getElement(CardElement) },
       });
 
+      if (result.error) {
+        setError(result.error.message);
+        setLoading(false);
+        return;
+      }
+
       if (result.paymentIntent.status === "succeeded") {
-        
-        // --- المنطق الجديد يبدأ هنا ---
-        
-        // 1. تحديث إتاحة الغرف (قفل التواريخ)
         await Promise.all(
           bookingDetails.selectedRooms.map((roomId) => {
             return api.put(`/rooms/availability/${roomId}`, {
@@ -39,7 +44,6 @@ const CheckoutForm = ({ bookingAmount, bookingDetails }) => {
           })
         );
 
-        // 2. إضافة كارت الحجز لبروفايل اليوزر
         await api.post(`/users/${user._id}/currentbookings`, {
           bookingCard: bookingDetails, 
           userId: user._id
@@ -49,8 +53,8 @@ const CheckoutForm = ({ bookingAmount, bookingDetails }) => {
         navigate("/profile"); 
       }
     } catch (err) {
-        console.error("Full Error Details:", err); // ده هيقولك المشكلة من السيرفر ولا من الكود
-        setError(err.response?.data?.message || "Payment failed or database update error");
+      console.error("Full Error Details:", err);
+      setError(err.response?.data?.message || "Payment failed or database update error");
     }
     setLoading(false);
   };
@@ -78,7 +82,7 @@ const CheckoutForm = ({ bookingAmount, bookingDetails }) => {
       <div className="checkout-card">
         <div className="checkout-header">
           <h1>Payment Details</h1>
-          <div className="amount-badge">${bookingAmount}</div>
+          <div className="amount-badge">${Math.round(bookingAmount)}</div>
         </div>
 
         <form onSubmit={handleSubmit}>

@@ -18,7 +18,7 @@ import Pay from "./pages/pay/Pay.jsx";
 import Profile from "./pages/profile/Profile";
 import Register from "./pages/register/register.jsx";
 import Tlist from "./pages/tlist/Tlist.jsx";
-
+import "./styles/global.css";
 
 
 function App() {

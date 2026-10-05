@@ -2,13 +2,12 @@ import "./list.scss"
 import Sidebar from "../../components/sidebar/Sidebar"
 import Navbar from "../../components/navbar/Navbar"
 import Datatable from "../../components/datatable/Datatable"
-import { useLocation } from "react-router-dom"; // 🚀 Import useLocation to get the path
+import { useLocation } from "react-router-dom"; 
 
 const List = ({columns}) => {
   const location = useLocation();
-  const path = location.pathname.split("/")[1]; // 🚀 Get "hotels", "rooms", or "users"
+  const path = location.pathname.split("/")[1]; 
 
-  // 🚀 Determine the listType based on the path
   let listType;
   if (path === "hotels") {
     listType = "hotels";
@@ -17,7 +16,7 @@ const List = ({columns}) => {
   } else if (path === "users") {
     listType = "users";
   } else {
-    listType = ""; // Fallback or handle other cases if they exist
+    listType = "";
   }
 
   return (
@@ -25,7 +24,6 @@ const List = ({columns}) => {
       <Sidebar/>
       <div className="listContainer">
         <Navbar/>
-        {/* 🚀 Pass the determined listType to Datatable */}
         <Datatable columns={columns} listType={listType} /> 
       </div>
     </div>

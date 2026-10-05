@@ -1,12 +1,19 @@
 // File: src/pages/offers/AvailableCitiesPage.jsx
 
-import React, { useEffect, useState } from 'react'; // أضفنا useEffect
+import React, { useEffect, useState } from 'react'; 
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from "../../components/navbar/Navbar";
 import Header from "../../components/header/Header";
 import MailList from "../../components/mailList/MailList";
 import Footer from "../../components/footer/Footer";
 import "./offers.css"; 
+import dahab from "../../assets/images/dahab.jpg";
+import beirut from "../../assets/images/beirut.jpg";
+import tangier from "../../assets/images/tangier.jpg";
+import cairo from "../../assets/images/cairo.jpg";
+import hurgauda from "../../assets/images/hurguda.jpg";
+import rome from "../../assets/images/rome.jpg";
+import venice from "../../assets/images/venice.jpg";
 
 const AvailableCitiesPage = () => {
   const location = useLocation();
@@ -14,40 +21,20 @@ const AvailableCitiesPage = () => {
   // Get data from location.state first
   //let { offerType, cities } = location.state || {}; 
   
-const [cities, setCities] = useState(location.state?.cities || []);
-const [offerType, setOfferType] = useState(location.state?.offerType || "");
+  const [cities, setCities] = useState(location.state?.cities || []);
+  const [offerType, setOfferType] = useState(location.state?.offerType || "");
 
-  // هذا هو التعديل الجديد: استعادة البيانات من sessionStorage إذا لم تكن موجودة
-  /*useEffect(() => {
-    if (!offerType || !cities || cities.length === 0) {
-      try {
-        const storedCitiesData = sessionStorage.getItem('availableCitiesData');
-        const storedOfferType = sessionStorage.getItem('selectedOfferType');
+  const cityImages = {
+  "Dahab": dahab,
+  "Beirut": beirut,
+  "Tangier": tangier,
+  "Cairo": cairo,
+  "Hurgauda": hurgauda,
+  "Rome": rome,
+  "Venice": venice
+};
 
-        if (storedCitiesData && storedOfferType) {
-          cities = JSON.parse(storedCitiesData);
-          offerType = storedOfferType;
-          // تحديث حالة الكومبوننت بالبيانات المستعادة
-          // (لا يمكن تحديث المتغيرات مباشرة، يجب استخدام useState لو كانت هذه البيانات ستتغير)
-          // بما أن هذه البيانات ثابتة للصفحة، يمكن استخدامها مباشرة بعد جلبها أو إعادة التوجيه
-          // في هذا السيناريو، إذا كانت البيانات غير موجودة من location.state، سيتم معالجتها في شرط الـ if التالي
-          // وتمريرها مرة أخرى عند النفيجيت
-          if (cities.length > 0) {
-              // هذا الشرط مهم لضمان عدم عرض 'No Cities' إذا كانت البيانات متاحة في sessionStorage
-              // ويمكن إعادة توجيه المستخدم إذا لم يكن هناك بيانات في location.state
-              // لكن بما أننا نستخدمها مباشرة، يكفي التعامل معها في شرط الـ if التالي
-          }
-        } else {
-            // إذا لم يتم العثور على بيانات في sessionStorage، قم بإعادة التوجيه إلى صفحة العروض الرئيسية
-            // لضمان بدء العملية من جديد
-            navigate('/offers'); 
-        }
-      } catch (e) {
-        console.error("Error parsing sessionStorage data:", e);
-        navigate('/offers'); // Fallback to main offers page on error
-      }
-    }
-  }, [offerType, cities, navigate]); // أضفنا offerType, cities, navigate كتوابع لـ useEffect */
+
   useEffect(() => {
     if (!offerType || cities.length === 0) {
       try {
@@ -68,7 +55,6 @@ const [offerType, setOfferType] = useState(location.state?.offerType || "");
   }, [offerType, cities.length, navigate]);
 
   // Handle cases where no data is passed or cities array is empty
-  // (هذا الشرط الآن سيعالج البيانات سواء من location.state أو من sessionStorage)
   if (!offerType || !cities || cities.length === 0) {
     return (
       <div>
@@ -107,12 +93,27 @@ const [offerType, setOfferType] = useState(location.state?.offerType || "");
         <p>Explore the cities offering great deals:</p>
 
         <div className="cities-grid">
-          {cities.map((cityData) => ( // Loop through each city object
-            <div key={cityData.city} className="city-card" onClick={() => handleCityClick(cityData)}>
-              <h3 className="city-name">{cityData.city}</h3>
-              <p>{cityData.hotels.length} hotels available</p> 
-            </div>
-          ))}
+          {cities.map((cityData) => {
+            const imgUrl = cityImages[cityData.city] || cityImages.default;
+
+            return (
+              <div 
+                key={cityData.city} 
+                className="city-card" 
+                onClick={() => handleCityClick(cityData)}
+              >
+                <img 
+                  src={imgUrl} 
+                  alt={cityData.city} 
+                  className="city-image" 
+                />
+                <div className="city-info">
+                  <h3 className="city-name">{cityData.city}</h3>
+                  <p>{cityData.hotels.length} hotels available</p> 
+                </div>
+              </div>
+            );
+          })}
         </div>
         <button className="back-button" onClick={() => navigate('/offers')}>Back to All Offers</button>
       </div>

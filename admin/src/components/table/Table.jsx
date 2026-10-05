@@ -15,18 +15,13 @@ const List = ({ userId }) => {
 
  useEffect(() => {
     const fetchHistoryBookings = async () => {
-      // حماية: لو الـ userId لسه مش موجود (في أول render مثلاً) ميعملش طلب للسيرفر
       if (!userId) return;
 
       try {
-        // 1. استخدمنا api.get مع المسار النسبي فقط
-        // 2. الـ Base URL والـ Credentials (التوكن) بيتحطوا تلقائياً
         const response = await API.get(`/users/${userId}/historyBookings`);
 
-        // 3. في Axios الداتا بتكون موجودة جوه response.data ومش محتاجة await response.json()
         setHistoryBookings(response.data);
       } catch (error) {
-        // 4. سحب رسالة الخطأ من السيرفر بشكل احترافي
         const errorMsg = error.response?.data?.message || "Failed to fetch history bookings";
         console.error("Error fetching history bookings:", errorMsg);
       }

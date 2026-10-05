@@ -36,10 +36,8 @@ const NewRoom = () => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    // 1. التأكد من حقول الـ Inputs (مثل السعر والوصف)
     const isInfoIncomplete = roomInputs.some((input) => !info[input.id]);
     
-    // 2. فحص شامل ومنفصل (الصح)
     if (isInfoIncomplete || !hotelId || !rooms.trim()) {
       setErrorMessage("Please fill in all the fields correctly.");
       setLoadingRequest(false);
@@ -51,12 +49,10 @@ const NewRoom = () => {
       return;
     }
 
-    // 3. تحويل النص لمصفوفة أرقام غرف مع تنظيف المسافات
-    // لو الأدمن كتب "101, 102 " الـ trim هيشيل الفراغات
     const roomNumbers = rooms.split(",").map((room) => ({ number: room.trim() }));
 
     try {
-      setLoadingRequest(true); // ابدأ الـ loading
+      setLoadingRequest(true);
       await API.post(`/rooms/${hotelId}`, { ...info, roomNumbers });
       
       setSuccessMessage("Room added successfully!");
@@ -68,7 +64,7 @@ const NewRoom = () => {
     } catch (err) {
       setErrorMessage(err.response?.data?.message || "Failed to create room.");
     } finally {
-      setLoadingRequest(false); // وقف الـ loading
+      setLoadingRequest(false);
     }
   };
 

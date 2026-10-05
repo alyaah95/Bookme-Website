@@ -31,8 +31,8 @@ connect();
 
 //middlewares
 app.use(cors({
-  origin: true, // 🚀 ده لازم يكون الـ Origin بتاع الـ Frontend بتاعك
-  credentials: true,               // 🚀 ده لازم يكون True عشان تسمحي باستقبال الـ Cookies
+  origin: true, 
+  credentials: true,               
 }));
 app.use(cookieParser())
 app.use(express.json());
@@ -54,9 +54,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// app.listen(8800, () => {
-//   connect();
-//   console.log("Connected to backend.");
-// });
+app.listen(8800, () => {
+  connect();
+  console.log("Connected to backend.");
+});
 
 export default app;

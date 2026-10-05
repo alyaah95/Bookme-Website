@@ -1,20 +1,16 @@
 import User from "../models/User.js";
-import bcrypt from "bcryptjs"; // Add this import
+import bcrypt from "bcryptjs"; 
 
 export const updateUser = async (req, res, next) => {
   try {
-    // 1. ابحثي عن المستخدم أولاً
     const user = await User.findById(req.params.id);
     if (!user) return next(createError(404, "User not found!"));
 
-    // 2. حدثي البيانات يدويًا من الـ body
-    // نستخدم Object.assign لدمج البيانات الجديدة مع القديمة
+
     Object.assign(user, req.body);
 
-    // 3. هنا السر: استدعاء .save() هو ما سيقوم بتشغيل التشفير في الموديل
     const updatedUser = await user.save();
 
-    // إخفاء الباسوورد من الرد الراجع للمتصفح للأمان
     const { password, ...otherDetails } = updatedUser._doc;
     res.status(200).json(otherDetails);
     
@@ -52,19 +48,19 @@ export const getUsers = async (req, res, next) => {
   }
 };
 
-// 🚀 New function for Admin Dashboard - getAdminUsers with pagination
+//function for Admin Dashboard - getAdminUsers with pagination
 export const getAdminUsers = async (req, res, next) => {
-  const limit = parseInt(req.query.limit) || 10; // 🚀 Default limit for admin view
-  const page = parseInt(req.query.page) || 1;   // 🚀 Default page for admin view
-  const skip = (page - 1) * limit;            // 🚀 Calculate skip for pagination
+  const limit = parseInt(req.query.limit) || 10; //Default limit for admin view
+  const page = parseInt(req.query.page) || 1;   //Default page for admin view
+  const skip = (page - 1) * limit;            //Calculate skip for pagination
 
   try {
-    const totalCount = await User.countDocuments({}); // 🚀 Get total count for frontend pagination
+    const totalCount = await User.countDocuments({}); // Get total count for frontend pagination
     const users = await User.find({})
-      .skip(skip)   // 🚀 Apply skip for pagination
-      .limit(limit); // 🚀 Apply limit for pagination
+      .skip(skip)   // Apply skip for pagination
+      .limit(limit); // Apply limit for pagination
 
-    // 🚀 Return total count, page, and limit along with users
+    //Return total count, page, and limit along with users
     res.status(200).json({
       total: totalCount,
       page: page,
@@ -214,18 +210,18 @@ export const addCurrentBookingToUser = async (req, res, next) => {
     next(error);
   }
 };
-// 🚀 Modified addHistoryBookingToUser - using $addToSet for better performance and to prevent duplicates
+// Modified addHistoryBookingToUser - using $addToSet for better performance and to prevent duplicates
 export const addHistoryBookingToUser = async (req, res, next) => {
   const userId = req.params.id;
   const bookingCard = req.body.bookingCard;
 
   try {
-    // 🚀 Using $addToSet to add the booking card only if its _id is not already present
+    // Using $addToSet to add the booking card only if its _id is not already present
     // This is more efficient and prevents duplicates directly in MongoDB
     let user = await User.findByIdAndUpdate(
       userId,
       {
-        $addToSet: { HistoryBookings: bookingCard }, // 🚀 Adds the booking if _id is unique
+        $addToSet: { HistoryBookings: bookingCard }, // Adds the booking if _id is unique
       },
       { new: true }
     );
@@ -262,7 +258,7 @@ export const getUserHistoryBookings = async (req, res, next) => {
   }
 };
 
-// 🚀 New function for Admin Dashboard - getAdminUserHistoryBookings with pagination
+//  New function for Admin Dashboard - getAdminUserHistoryBookings with pagination
 export const getAdminUserHistoryBookings = async (req, res, next) => {
   const userId = req.params.id;
   const limit = parseInt(req.query.limit) || 10;
@@ -276,9 +272,9 @@ export const getAdminUserHistoryBookings = async (req, res, next) => {
     }
 
     const historyBookings = user.HistoryBookings;
-    const totalCount = historyBookings.length; // 🚀 Get total count from the array length
+    const totalCount = historyBookings.length; //  Get total count from the array length
 
-    // 🚀 Manually paginate the array in Node.js (for nested arrays like this)
+    //  Manually paginate the array in Node.js (for nested arrays like this)
     const paginatedBookings = historyBookings.slice(skip, skip + limit);
 
     res.status(200).json({

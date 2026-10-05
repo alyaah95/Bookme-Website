@@ -6,7 +6,6 @@ import Swal from 'sweetalert2';
 const UpdateModal = ({ setOpen, type, item, id }) => {
   const [info, setInfo] = useState({});
 
-  // منطق التحقق من وجود حجز لتعطيل الحقول في الفرونت أند (اختياري لزيادة الأمان)
   const hasBookings = type === "rooms" 
     ? item.roomNumbers?.some(rn => rn.unavailableDates.length > 0)
     : type === "hotels"
@@ -36,7 +35,6 @@ const UpdateModal = ({ setOpen, type, item, id }) => {
         <h1>Update {type.slice(0, -1)}</h1>
         <form className="updateForm">
           
-          {/* --- حقول الفندق (Hotel) --- */}
           {type === "hotels" && (
             <div className="formGrid">
               <div className="item">
@@ -74,7 +72,6 @@ const UpdateModal = ({ setOpen, type, item, id }) => {
             </div>
           )}
 
-          {/* --- حقول الغرفة (Room) --- */}
           {type === "rooms" && (
             <div className="formGrid">
               <div className="item">
@@ -96,7 +93,6 @@ const UpdateModal = ({ setOpen, type, item, id }) => {
             </div>
           )}
 
-          {/* --- حقول المستخدم (User) --- */}
           {type === "users" && (
             <div className="formGrid">
               <div className="item">

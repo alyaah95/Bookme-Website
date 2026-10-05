@@ -3,12 +3,12 @@ import mongoose from "mongoose";
 const ReviewSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // ربط مباشر بموديل اليوزر
+    ref: "User", 
     required: true,
   },
   hotelId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Hotel", // ربط مباشر بموديل الفندق
+    ref: "Hotel", 
     required: true,
   },
   rating: {
@@ -21,6 +21,6 @@ const ReviewSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-}, { timestamps: true }); // هيضيف تاريخ التقييم تلقائياً
+}, { timestamps: true }); 
 
 export default mongoose.model("Review", ReviewSchema);

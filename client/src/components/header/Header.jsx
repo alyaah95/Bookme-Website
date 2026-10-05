@@ -149,20 +149,16 @@ const Header = ({ type }) => {
                   placeholder="Where are you going?"
                   className="headerSearchInput"
                   onChange={(e) => {
-                    // جلب القيمة المدخلة من حقل البحث
                     const inputValue = e.target.value;
                 
-                    // 1. إزالة المسافات الزائدة من البداية والنهاية
                     const trimmedValue = inputValue.trim();
                 
-                    // 2. تقسيم النص إلى كلمات بناءً على المسافات، ثم تحويل الحرف الأول من كل كلمة إلى كابيتال
-                    // 3. إعادة تجميع الكلمات بدون مسافات إضافية بينها
+
                     const formattedDestination = trimmedValue
-                        .split(/\s+/) // تقسيم النص عند وجود مسافة واحدة أو أكثر
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // تحويل أول حرف لكابيتال والباقي سمول
-                        .join(' '); // تجميع الكلمات بمسافة واحدة بينها
+                        .split(/\s+/) 
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) 
+                        .join(' ');
                 
-                    // تحديث حالة الـ destination بالقيمة المنسقة
                     setDestination(formattedDestination);
                 }}
                 />

@@ -14,7 +14,6 @@ const loadCSVReviews = () => {
     fs.createReadStream("reviews.csv")
       .pipe(csv())
       .on("data", (data) => {
-        // تأكدي من مسميات الأعمدة في الـ CSV (لو Review و Rating كابيتال سيبيهم كدة)
         if (data.Review && data.Rating) {
           results.push({
             comment: data.Review,
@@ -35,7 +34,6 @@ const massSeedWithCSV = async () => {
     const csvReviews = await loadCSVReviews();
     console.log(`Loaded ${csvReviews.length} reviews from CSV.`);
 
-    // 1. تنظيف الداتا القديمة
     await Review.deleteMany({});
     await User.updateMany({}, { $set: { HistoryBookings: [], CurrentBookings: [] } });
 
@@ -43,12 +41,10 @@ const massSeedWithCSV = async () => {
     const allHotels = await Hotel.find();
 
     for (const user of allUsers) {
-      // اختيار فنادق عشوائية لكل مستخدم
       const shuffledHotels = allHotels.sort(() => 0.5 - Math.random());
       const selectedForHistory = shuffledHotels.slice(0, 2);
       const selectedForCurrent = shuffledHotels.slice(2, 3);
 
-      // 2. إنشاء بيانات الحجوزات يدوياً عشان نضمن الـ structure
       const historyEntries = selectedForHistory.map(hotel => ({
         fromDate: "2024-03-01",
         toDate: "2024-03-05",
@@ -75,7 +71,6 @@ const massSeedWithCSV = async () => {
         }]
       }));
 
-      // 3. تحديث اليوزر
       await User.findByIdAndUpdate(user._id, {
         $set: { 
             HistoryBookings: historyEntries,
@@ -83,14 +78,13 @@ const massSeedWithCSV = async () => {
         }
       });
 
-      // 4. إنشاء الريفيوهات (هنا كان الخطأ، دلوقتي بنستخدم historyEntries مباشرة)
       for (const entry of historyEntries) {
         if (csvReviews.length > 0) {
           const randomCSV = csvReviews[Math.floor(Math.random() * csvReviews.length)];
           
           const realReview = new Review({
             userId: user._id,
-            hotelId: entry.ReservationDetails[0].hotelId, // السطر ده بقى آمن
+            hotelId: entry.ReservationDetails[0].hotelId, 
             rating: randomCSV.rating || 5,
             comment: randomCSV.comment || "Good experience!"
           });
@@ -100,10 +94,10 @@ const massSeedWithCSV = async () => {
       console.log(`User ${user.username} - Bookings & Reviews Synced.`);
     }
 
-    console.log("✅ DONE! Database is now populated with real CSV reviews.");
+    console.log(" DONE! Database is now populated with real CSV reviews.");
     process.exit();
   } catch (err) {
-    console.error("❌ Seeding failed:", err.message);
+    console.error(" Seeding failed:", err.message);
     process.exit(1);
   }
 };

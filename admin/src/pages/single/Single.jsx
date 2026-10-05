@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
-import List from "../../components/table/Table"; // جدول الحجوزات الحالي
+import List from "../../components/table/Table";
 import "./single.scss";
 import API from "../../api/axiosInstance";
 import UpdateModal from '../../components/updateModal/UpdateModal';
@@ -39,7 +39,6 @@ const Single = () => {
   }, [path, id]);
 
   const handleDelete = async () => {
-    // 1. سؤال الأدمن للتأكيد قبل المحاولة
     const { isConfirmed } = await Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -60,14 +59,11 @@ const Single = () => {
         await API.delete(`/${path}/${id}`);
       }
       
-      // نجاح المسح
       await Swal.fire('Deleted!', 'Item has been deleted successfully.', 'success');
       window.location.replace(`/${path}`);
     } catch (err) {
-      // جلب الرسالة من الباك أند
       const errorMsg = err.response?.data?.message || "Sorry, you cannot delete this item.";
       
-      // إظهار التنبيه باستخدام SweetAlert2 لأنه لا يمكن حجبه من المتصفح
       Swal.fire({
         icon: 'error',
         title: 'Deletion Failed',
@@ -99,7 +95,6 @@ const Single = () => {
               <div className="details">
                 <h1 className="itemTitle">{item.username || item.name || item.title}</h1>
                 
-                {/* --- تفاصيل المستخدم --- */}
                 {path === "users" && (
                   <div className="infoGrid">
                     <div className="detailItem"><span className="itemKey">Email:</span> <span className="itemValue">{item.email}</span></div>
@@ -109,7 +104,6 @@ const Single = () => {
                   </div>
                 )}
 
-                {/* --- تفاصيل الفندق --- */}
                 {path === "hotels" && (
                   <>
                   <div className="infoGrid">
@@ -120,7 +114,6 @@ const Single = () => {
                     <div className="detailItem"><span className="itemKey">Price:</span> <span className="itemValue">${item.cheapestPrice}</span></div>
                     <div className="detailItem"><span className="itemKey">Rating:</span> <span className="itemValue">{item.rating || "No rating"} ⭐</span></div>
                   </div>
-                  {/* قسم الغرف التابعة للفندق */}
                   <div className="hotelRoomsSection">
                     <h2 className="title">Included Rooms</h2>
                     <div className="roomsWrapper">
@@ -148,7 +141,6 @@ const Single = () => {
                   </>
                 )}
 
-                {/* --- تفاصيل الغرفة --- */}
                 {path === "rooms" && (
                   <>
                   <div className="infoGrid">
@@ -191,10 +183,8 @@ const Single = () => {
           </div>
         </div>
 
-        {/* --- الأقسام السفلية (المصفوفات المعقدة) --- */}
         <div className="bottomSections">
           
-          {/* 1. عروض الفندق أو الغرفة */}
           {(item.offers && item.offers.length > 0) && (
             <div className="sectionBox">
               <h2 className="title">Active Offers</h2>
@@ -211,12 +201,11 @@ const Single = () => {
             </div>
           )}
 
-          {/* 2. حجوزات المستخدم (Current & History) */}
           {path === "users" && (
             <>
               <div className="sectionBox">
                 <h2 className="title">Current Bookings</h2>
-                <List userId={id} /> {/* الجدول اللي إنتي عاملاه أصلاً */}
+                <List userId={id} />
               </div>
               {item.HistoryBookings?.length > 0 && (
                 <div className="sectionBox">
@@ -229,7 +218,6 @@ const Single = () => {
             </>
           )}
 
-          {/* 3. رسائل المستخدم أو المراجعات */}
           {item.Messages?.length > 0 && (
             <div className="sectionBox">
               <h2 className="title">User Messages</h2>

@@ -8,42 +8,37 @@ dotenv.config();
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('MongoDB connected');
+    await mongoose.connect(process.env.MONGO);
+    console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error);
+    process.exit(1);
   }
 };
 
-const deleteFakeDataExceptSome = async () => {
+const deleteAllData = async () => {
   try {
-    // Example criteria for hotels to keep
-    const hotelIdsToKeep = ['6627fd2949d31ee96ff1857f', '66288973df8570c91c9675f3','6628897bdf8570c91c9675f5','662889a7df8570c91c9675f9','6629ae277f2e9896b31fcba4']; // Replace with actual IDs
-    await Hotel.deleteMany({ _id: { $nin: hotelIdsToKeep } });
-    console.log('Hotels except specified ones deleted');
-    
-    // Example criteria for rooms to keep
-    const roomIdsToKeep = ['662856bbb8b26b5f6b49734f', '66294b9edf8570c91c9676aa','66294c05df8570c91c9676af','6629af687f2e9896b31fcbb9','6667cc2536de40d47b0222af','6667cd3f36de40d47b0222b5']; // Replace with actual IDs
-    await Room.deleteMany({ _id: { $nin: roomIdsToKeep } });
-    console.log('Rooms except specified ones deleted');
-    
-    // Example criteria for users to keep
-    const userIdsToKeep = ['6675e95f171d5aa205ddc28f','662994c42ef2f92fd9b2ee4d', '6629ac607f2e9896b31fcb90','662ed8d7a3ea62a763f0961b','6638edb5d590161fb7e65221','665cd01d1d07cca224952263']; // Replace with actual IDs
-    await User.deleteMany({ _id: { $nin: userIdsToKeep } });
-    console.log('Users except specified ones deleted');
+    const deletedHotels = await Hotel.deleteMany({});
+    console.log(`Deleted ${deletedHotels.deletedCount} hotels.`);
+
+    const deletedRooms = await Room.deleteMany({});
+    console.log(`Deleted ${deletedRooms.deletedCount} rooms.`);
+
+    const deletedUsers = await User.deleteMany({});
+    console.log(`Deleted ${deletedUsers.deletedCount} users.`);
+
+    console.log('All data has been completely erased from the database!');
   } catch (error) {
     console.error('Error deleting data:', error);
   } finally {
-    mongoose.disconnect();
+    await mongoose.disconnect();
+    console.log('MongoDB disconnected');
   }
 };
 
-const clearDatabaseExceptSome = async () => {
+const clearDatabase = async () => {
   await connectDB();
-  await deleteFakeDataExceptSome();
+  await deleteAllData();
 };
 
-clearDatabaseExceptSome();
+clearDatabase();

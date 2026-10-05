@@ -1,6 +1,6 @@
 import axios from "axios";
 import api from "../../utils/api";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import "./register.css";
@@ -16,8 +16,22 @@ const Register = () => {
     phone:"",
   });
 
+  const containerRef = useRef(null);
   const { loading, errorR, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+  if (errorR) {
+    setTimeout(() => {
+      if (containerRef.current) {
+        containerRef.current.scrollTo({
+          top: containerRef.current.scrollHeight, 
+          behavior: "smooth",
+        });
+      }
+    }, 100);
+  }
+}, [errorR]);
 
   const handleChange = (e) => {
     setCredentials((prev) => ({ ...prev, [e.target.id]: e.target.value }));
@@ -25,6 +39,7 @@ const Register = () => {
 
   const handleClick = async (e) => {
     e.preventDefault();
+
 
     // Check if passwords match
     
@@ -68,6 +83,8 @@ const Register = () => {
       // Redirect to login page after successful registration
       navigate("/login");
     } catch (err) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       const searchUsername = ["duplicate key","username"]
       const findUsername = searchUsername.every(subString => err.response.data.message.includes(subString))
       const searchEmail = ["duplicate key","email"]
@@ -81,6 +98,8 @@ const Register = () => {
       }
       
       console.log(err.response.data.message);
+
+      
       
     }
   };
@@ -88,7 +107,7 @@ const Register = () => {
   return (
     <div className="register">
       
-      <div className="rContainer">
+      <div className="regContainer" ref={containerRef}>
         <input
           type="text"
           placeholder="Username"

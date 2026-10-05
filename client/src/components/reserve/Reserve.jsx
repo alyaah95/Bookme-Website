@@ -41,9 +41,16 @@ const Reserve = ({ setOpen, hotelId }) => {
   const alldates = getDatesInRange(dates[0].startDate, dates[0].endDate);
 
   const isAvailable = (roomNumber) => {
-    const isFound = roomNumber.unavailableDates.some((date) =>
-      alldates.includes(new Date(date).getTime())
+    // convert all dates to a consistent format (YYYY-MM-DD) for comparison
+    const formattedAllDates = alldates.map((d) =>
+      new Date(d).toISOString().split("T")[0]
     );
+
+    const isFound = roomNumber.unavailableDates.some((date) => {
+      const formattedUnavailableDate = new Date(date).toISOString().split("T")[0];
+      return formattedAllDates.includes(formattedUnavailableDate);
+    });
+
     return !isFound;
   };
 
@@ -162,7 +169,6 @@ const Reserve = ({ setOpen, hotelId }) => {
 
   const addBookingCard = async () => {
     try {
-      // 1. حسابات الداتا بتفضل زي ما هي (المنطق مبيتغيرش)
       const roomIdsOnly = hoteldata.data.rooms.map(room => room._id || room);
       const roomNames = await searchRoomsForHotels(roomIdsOnly, selectedRooms);
       const reservationData = await getReservation(roomIdsOnly, selectedRooms);
@@ -179,33 +185,27 @@ const Reserve = ({ setOpen, hotelId }) => {
         numberOfRooms: selectedRooms.length,
         roomNames: roomNames,
         ReservationDetails: RoomDetails,
-        totalCost: roomsTotalPrice + (days * hoteldata.data.cheapestPrice)
+        totalCost: Math.round(roomsTotalPrice + (days * hoteldata.data.cheapestPrice))
       };
 
       const userId = user._id; 
 
-      // 2. التعديل الجوهري هنا:
-      // بدل الـ fetch الطويلة، بنستخدم الـ api instance
-      // هو لوحده هيضيف http://localhost:8800/api في الأول
-      // وهو لوحده هيحول الكائن (Object) لـ JSON
-      // وهو لوحده هيبعت الكوكيز (التوكن)
+
       
       await api.post(`/users/${userId}/currentbookings`, {
         bookingCard: bookingCard, 
         userId: userId
       });
 
-      // 3. في Axios لو العملية فشلت، الكود هيروح للـ catch فوراً
-      // فمش محتاجين نشيك على if(!response.ok) يدوي
+
       
       setOpen(false);
       navigate('/pay', {state: {amount: bookingCard.totalCost}});
 
     } catch (error) {
-      // التعامل مع الخطأ بقى أذكى: بنشوف لو السيرفر باعت رسالة خطأ معينة
       const errorMsg = error.response?.data?.message || 'Failed to add booking';
       console.error('Error adding booking:', errorMsg);
-      alert(errorMsg); // تنبيه للمستخدم
+      alert(errorMsg); 
     }
   };
 
@@ -216,7 +216,6 @@ const Reserve = ({ setOpen, hotelId }) => {
         return;
       }
 
-      // 1. حساب بيانات الحجز (نفس المنطق بتاعك)
       const roomIdsOnly = hoteldata.data.rooms.map(room => room._id || room);
       const roomNames = await searchRoomsForHotels(roomIdsOnly, selectedRooms);
       const reservationData = await getReservation(roomIdsOnly, selectedRooms);
@@ -233,14 +232,13 @@ const Reserve = ({ setOpen, hotelId }) => {
           hotelName: hoteldata.data.name,
           numberOfRooms: selectedRooms.length,
           roomNames: roomNames,
-          selectedRooms: selectedRooms, // هنحتاجها عشان نقفل التواريخ بعد الدفع
+          selectedRooms: selectedRooms, 
           ReservationDetails: RoomDetails,
           totalCost: reservationData.totalPrice + (days * hoteldata.data.cheapestPrice),
-          alldates: alldates // هنحتاجها برضه
+          alldates: alldates 
         }
       };
 
-      // 2. الانتقال لصفحة الدفع وإرسال كل البيانات دي معاكي
       setOpen(false);
       navigate('/pay', { state: bookingData });
 
@@ -271,8 +269,8 @@ const Reserve = ({ setOpen, hotelId }) => {
               ) : (
                 item.offers.map((offer, index) => (
                   <div key={index} className="rOffer">
-                    <p className="rOfferPriceBefore">${offer.priceBefore}</p>
-                    <p className="rOfferPriceAfter">${offer.priceAfter}</p>
+                    <p className="rOfferPriceBefore">${Math.round(offer.priceBefore)}</p>
+                    <p className="rOfferPriceAfter">${Math.round(offer.priceAfter)}</p>
                     <p className="rOfferSaving">Save: {offer.percentageSaving}%</p>
                     <p className="rOfferValidity">Valid from: {new Date(offer.from).toLocaleDateString()} to {new Date(offer.to).toLocaleDateString()}</p>
                     <p className="rOfferNote">Note: If selected dates fall outside the offer period, the additional days will be charged at the original room price.</p>

@@ -53,7 +53,7 @@ export const forgotPassword = async (req, res, next) => {
   const { email } = req.body;
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "هذا البريد غير مسجل!" });
+    if (!user) return res.status(404).json({ message: "Email not found!" });
     if (req.body.isAdminRequest && !user.isAdmin) {
         return res.status(403).json({ message: "Sorry, you don't have access to this page!" });
     }
@@ -68,7 +68,6 @@ export const forgotPassword = async (req, res, next) => {
       auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
     });
 
-    // نحاول نرسل، لو فشل نطلع Error ونوقف
     await transporter.sendMail({
       from: `"Booking Support" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -76,16 +75,13 @@ export const forgotPassword = async (req, res, next) => {
       html: `<b>Your code is: ${otp}</b>`,
     });
 
-    // الرد ده مش هيتبعت إلا لو الإيميل اترسل فعلاً
     if (info.accepted.length > 0) {
       return res.status(200).json("Success");
     } else {
-      // لو الإيميل مرفوض فوراً
       throw new Error("Rejected");
     }
 
   } catch (err) {
-    // لو الإيميل وهمي أو فيه مشكلة في السيرفر
     return res.status(500).json({ message: "Failed to send email, please check the email address." });
   }
 };
@@ -95,12 +91,11 @@ export const resetPassword = async (req, res, next) => {
     const user = await User.findOne({
       email: req.body.email,
       resetOTP: req.body.otp,
-      resetOTPExpires: { $gt: Date.now() }, // التأكد إن الكود لسه مخلصش
+      resetOTPExpires: { $gt: Date.now() }, 
     });
 
     if (!user) return next(createError(400, "Invalid OTP or expired"));
 
-    // تحديث الباسوورد (التشفير هيحصل تلقائي في الموديل زي ما عملنا قبل كدا)
     user.password = req.body.newPassword;
     user.resetOTP = undefined;
     user.resetOTPExpires = undefined;

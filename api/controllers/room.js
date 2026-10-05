@@ -4,14 +4,13 @@ import Room from "../models/Room.js";
 export const createRoom = async (req, res, next) => {
   const hotelId = req.params.hotelid;
 
-  // هنا بنبني الـ Room object بشكل يدوي وصريح عشان نمنع أي Type Conflict
   const newRoom = new Room({
     title: req.body.title,
     price: req.body.price,
     maxPeople: req.body.maxPeople,
     desc: req.body.desc,
-    roomNumbers: req.body.roomNumbers, // المصفوفة اللي جاية من الـ split
-    hotelId: hotelId // الـ ID اللي جاي من الـ Params
+    roomNumbers: req.body.roomNumbers, 
+    hotelId: hotelId 
   });
 
   try {
@@ -25,7 +24,6 @@ export const createRoom = async (req, res, next) => {
     }
     res.status(200).json(savedRoom);
   } catch (err) {
-    // لو لسه فيه مشكلة في الـ Validation هتظهر هنا بوضوح
     next(err);
   }
 };
@@ -37,14 +35,12 @@ export const updateRoom = async (req, res, next) => {
 
     const hasBookings = room.roomNumbers.some(rn => rn.unavailableDates.length > 0);
 
-    // المنع في حالة وجود حجز
     if (hasBookings && (req.body.price || req.body.maxPeople)) {
       return res.status(400).json({ 
         message: "This room has active bookings, you cannot change price or capacity!" 
       });
     }
 
-    // تحديث البيانات يدوياً (هذا يسمح بتشغيل الـ pre-save hook)
     Object.assign(room, req.body);
     const savedRoom = await room.save(); 
 
@@ -60,8 +56,10 @@ export const updateRoomAvailability = async (req, res, next) => {
       { "roomNumbers._id": req.params.id },
       {
         $push: {
-          "roomNumbers.$.unavailableDates": req.body.dates
-        },
+          "roomNumbers.$.unavailableDates": {
+            $each: req.body.dates 
+          }
+        }
       }
     );
     res.status(200).json("Room status has been updated.");
@@ -69,12 +67,12 @@ export const updateRoomAvailability = async (req, res, next) => {
     next(err);
   }
 };
+
 export const deleteRoom = async (req, res, next) => {
   const hotelId = req.params.hotelid;
   try {
     const room = await Room.findById(req.params.id);
     
-    // فحص لو أي رقم غرفة جواه تواريخ محجوزة
     const hasBookings = room.roomNumbers.some(rn => rn.unavailableDates.length > 0);
     
     if (hasBookings) {
@@ -92,7 +90,7 @@ export const deleteRoom = async (req, res, next) => {
 
 export const getRoom = async (req, res, next) => {
   try {
-    const room = await Room.findById(req.params.id).populate("hotelId", "name"); // اجلب الغرفة ومعها اسم الفندق فقط
+    const room = await Room.findById(req.params.id).populate("hotelId", "name");
     res.status(200).json(room);
   } catch (err) {
     next(err);
@@ -107,19 +105,19 @@ export const getRooms = async (req, res, next) => {
   }
 };
 
-// 🚀 New function for Admin Dashboard - getAdminRooms with pagination
+// function for Admin Dashboard - getAdminRooms with pagination
 export const getAdminRooms = async (req, res, next) => {
-  const limit = parseInt(req.query.limit) || 10; // 🚀 Default limit for admin view
-  const page = parseInt(req.query.page) || 1;   // 🚀 Default page for admin view
-  const skip = (page - 1) * limit;            // 🚀 Calculate skip for pagination
+  const limit = parseInt(req.query.limit) || 10; // Default limit for admin view
+  const page = parseInt(req.query.page) || 1;   // Default page for admin view
+  const skip = (page - 1) * limit;            // Calculate skip for pagination
 
   try {
-    const totalCount = await Room.countDocuments({}); // 🚀 Get total count for frontend pagination
+    const totalCount = await Room.countDocuments({}); // Get total count for frontend pagination
     const rooms = await Room.find({})
-      .skip(skip)   // 🚀 Apply skip for pagination
-      .limit(limit); // 🚀 Apply limit for pagination
+      .skip(skip)   // Apply skip for pagination
+      .limit(limit); // Apply limit for pagination
 
-    // 🚀 Return total count, page, and limit along with rooms
+    // Return total count, page, and limit along with rooms
     res.status(200).json({
       total: totalCount,
       page: page,
@@ -214,7 +212,7 @@ export const getHotelIdByRoomId = async (req, res, next) => {
       return res.status(400).json({ message: "Hotel ID not found for this room" });
     }
 
-    res.status(200).json({ hotelId: room.hotelId }); // ✅ send as object
+    res.status(200).json({ hotelId: room.hotelId }); // send as object
   } catch (error) {
     console.error("Error fetching hotel ID:", error.message);
     next(error);

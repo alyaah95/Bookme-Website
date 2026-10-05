@@ -9,6 +9,14 @@ import Header from "../../components/header/Header";
 import MailList from "../../components/mailList/MailList";
 import Footer from "../../components/footer/Footer";
 import "./offers.css";
+import aidElFiter from "../../assets/images/aidElFiter.jpg";
+import autamn from "../../assets/images/autamn.jpg";
+import eidAladha from "../../assets/images/eidAladha.jpg";
+import spring from "../../assets/images/spring.jpg";
+import summer from "../../assets/images/summer.jpg";
+import winter from "../../assets/images/winter.jpg";
+import weekend from "../../assets/images/weekend.jpg";
+
 
 const HolidayOffers = () => {
   const [allOffersData, setAllOffersData] = useState([]); // Stores all hotels with offers
@@ -20,9 +28,6 @@ const HolidayOffers = () => {
     const fetchOffersData = async () => {
       try {
         // Fetch hotels with offer data from the backend
-        // ملاحظة: تأكدي من أن الـ API endpoint هنا مطابق للمسار في الـ Backend
-        // إذا كان المسار في الـ Backend هو /hotels/offersData، اتركيها كما هي
-        // إذا كان /api/offersData، قومي بتعديلها
         const response = await api.get("/hotels/offersData"); 
         setAllOffersData(response.data);
       } catch (err) {
@@ -37,13 +42,13 @@ const HolidayOffers = () => {
 
   // Define static offer types for display
   const offerTypes = [
-    { title: 'Summer Offers', key: 'summer offer', brief: 'Enjoy the summer with our special offers!', image: '/images/summer_offer.jpg' },
-    { title: 'Winter Offers', key: 'winter offer', brief: 'Warm up with our winter deals!', image: '/images/winter_offer.jpg' },
-    { title: 'Spring Offers', key: 'spring offer', brief: 'Bloom with our spring deals!', image: '/images/spring_offer.jpg' },
-    { title: 'Autumn Offers', key: 'autumn offer', brief: 'Fall into savings with our autumn deals!', image: '/images/autumn_offer.jpg' },
-    { title: 'Eid al-Fitr Offers', key: 'eid-al-fitr offer', brief: 'Celebrate Eid al-Fitr with our special offers!', image: '/images/eid_fitr_offer.jpg' },
-    { title: 'Eid al-Adha Offers', key: 'eid-al-adha offer', brief: 'Celebrate Eid al-Adha with our special offers!', image: '/images/eid_adha_offer.jpg' },
-    { title: 'Weekend Offers', key: 'weekend offer', brief: 'Enjoy your weekends with our special offers!', image: '/images/weekend_offer.jpg' },
+    { title: 'Summer Offers', key: 'summer offer', brief: 'Enjoy the summer with our special offers!', image: summer },
+    { title: 'Winter Offers', key: 'winter offer', brief: 'Warm up with our winter deals!', image: winter },
+    { title: 'Spring Offers', key: 'spring offer', brief: 'Bloom with our spring deals!', image: spring },
+    { title: 'Autumn Offers', key: 'autumn offer', brief: 'Fall into savings with our autumn deals!', image: autamn },
+    { title: 'Eid al-Fitr Offers', key: 'eid-al-fitr offer', brief: 'Celebrate Eid al-Fitr with our special offers!', image: aidElFiter },
+    { title: 'Eid al-Adha Offers', key: 'eid-al-adha offer', brief: 'Celebrate Eid al-Adha with our special offers!', image: eidAladha },
+    { title: 'Weekend Offers', key: 'weekend offer', brief: 'Enjoy your weekends with our special offers!', image: weekend },
   ];
 
   const handleOfferTypeClick = (offerKey) => {
@@ -67,8 +72,7 @@ const HolidayOffers = () => {
 
     const citiesForSelectedOffer = Array.from(citiesMap.values());
 
-    // هذا هو التعديل الجديد: تخزين بيانات المدن في sessionStorage
-    // لتكون متاحة عند الرجوع للصفحة مرة أخرى
+
     sessionStorage.setItem('availableCitiesData', JSON.stringify(citiesForSelectedOffer));
     sessionStorage.setItem('selectedOfferType', offerKey);
 

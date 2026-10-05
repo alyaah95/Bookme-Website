@@ -16,10 +16,9 @@ export const updateHotel = async (req, res, next) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
     
-    // فحص مباشر في جدول الغرف عن أي غرفة تتبع هذا الفندق ولديها حجز
     const roomWithBooking = await Room.findOne({
       hotelId: req.params.id,
-      "roomNumbers.unavailableDates.0": { $exists: true } // هل يوجد على الأقل تاريخ واحد؟
+      "roomNumbers.unavailableDates.0": { $exists: true }
     });
 
     if (roomWithBooking && (req.body.city || req.body.address || req.body.cheapestPrice)) {
@@ -38,7 +37,6 @@ export const updateHotel = async (req, res, next) => {
 export const deleteHotel = async (req, res, next) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
-    // جلب بيانات كل الغرف التابعة للفندق ده
     const rooms = await Room.find({ _id: { $in: hotel.rooms } });
     
     const hasBookings = rooms.some(room => 
@@ -78,11 +76,11 @@ export const getHotels = async (req, res, next) => {
   }
 };
 
-// 🚀 New function for Admin Dashboard - getAdminHotels with pagination
+//New function for Admin Dashboard - getAdminHotels with pagination
 export const getAdminHotels = async (req, res, next) => {
-  const limit = parseInt(req.query.limit) || 10; // 🚀 Default limit for admin view
-  const page = parseInt(req.query.page) || 1;   // 🚀 Default page for admin view
-  const skip = (page - 1) * limit;            // 🚀 Calculate skip for pagination
+  const limit = parseInt(req.query.limit) || 10; // Default limit for admin view
+  const page = parseInt(req.query.page) || 1;   // Default page for admin view
+  const skip = (page - 1) * limit;            // Calculate skip for pagination
 
   const { min, max, ...others } = req.query; // You might still want filtering for admin
 
@@ -92,13 +90,13 @@ export const getAdminHotels = async (req, res, next) => {
       cheapestPrice: { $gt: min || 1, $lt: max || 9999 },
     };
 
-    const totalCount = await Hotel.countDocuments(query); // 🚀 Get total count for frontend pagination
+    const totalCount = await Hotel.countDocuments(query); // Get total count for frontend pagination
 
     const hotels = await Hotel.find(query)
-      .skip(skip)   // 🚀 Apply skip for pagination
-      .limit(limit); // 🚀 Apply limit for pagination
+      .skip(skip)   // Apply skip for pagination
+      .limit(limit); // Apply limit for pagination
 
-    // 🚀 Return total count, page, and limit along with hotels
+    // Return total count, page, and limit along with hotels
     res.status(200).json({
       total: totalCount,
       page: page,
@@ -167,44 +165,30 @@ export const getHotelNames = async (req, res, next) => {
   }
 };
 
-// Fetch all rooms with offers and the hotel name
-// File: controllers/hotelController.js (أو roomController.js - يفضل تسميته hotelController.js)
-
-
-
-// هذا هو الكنترولر الخاص بك (موجود في مجلد controllers)
-// File: controllers/hotelController.js (أو roomController.js حسب تسميتك)
 
 
 
 export const getOffersData = async (req, res, next) => {
   try {
-    // جلب كل الفنادق التي لديها عروض رئيسية (مثلاً صيفي، شتوي)
-    // Populate هنا هتجلب فقط الغرف التي تحتوي على عروض وصفية بداخلها
+
     const hotelsWithOffers = await Hotel.find({
-      'offers.offerKind': { $exists: true, $ne: null } // تأكد أن الفندق لديه offerKind
+      'offers.offerKind': { $exists: true, $ne: null }
     }).populate({
-      path: 'rooms',    // الحقل الذي يربط الفندق بالغرف
-      model: 'Room',    // موديل الغرفة
-      select: 'title price offers maxPeople desc roomNumbers', // الحقول المطلوبة من الغرفة
-      // هنا هو التعديل الأساسي: قم بفلترة الغرف بحيث تظهر فقط تلك التي لديها عروض وصفية
-      match: { 'offers': { $exists: true, $not: { $size: 0 } } } // الغرفة يجب أن تحتوي على مصفوفة offers غير فارغة
+      path: 'rooms',    
+      model: 'Room',   
+      select: 'title price offers maxPeople desc roomNumbers', 
+      match: { 'offers': { $exists: true, $not: { $size: 0 } } } 
     });
 
     const structuredOffersData = [];
 
-    // معالجة البيانات لتجميعها بالشكل المطلوب للواجهة الأمامية.
     for (const hotel of hotelsWithOffers) {
-      // تأكد أن الفندق مازال يحتوي على غرف بعد عملية الفلترة
-      if (hotel.rooms && hotel.rooms.length > 0) { // هذا الشرط يضمن أن الفندق الذي تم جلبه لديه غرف بعروض
-        // نأخذ نوع العرض الرئيسي من الفندق
-        const hotelOfferKind = hotel.offers[0].offerKind; // نفترض أن offerKind الرئيسي هو في أول عرض للفندق
+      if (hotel.rooms && hotel.rooms.length > 0) { 
+        const hotelOfferKind = hotel.offers[0].offerKind; 
 
-        // نجمع كل الغرف التابعة لهذا الفندق والتي قد تحتوي على عروض وصفية (تم فلترتها بالفعل في الـ populate)
         const hotelRoomsWithDescriptiveOffers = [];
         if (hotel.rooms && hotel.rooms.length > 0) {
           for (const room of hotel.rooms) {
-            // هذا الشرط إضافي للتأكد، بالرغم من أن populate بـ match يجب أن يكون قد قام بالفلترة
             if (room.offers && room.offers.length > 0) {
               hotelRoomsWithDescriptiveOffers.push({
                 roomId: room._id,
@@ -213,13 +197,12 @@ export const getOffersData = async (req, res, next) => {
                 roomMaxPeople: room.maxPeople,
                 roomDescription: room.desc,
                 roomNumbers: room.roomNumbers,
-                roomDescriptiveOffers: room.offers // العروض الوصفية الخاصة بالغرفة
+                roomDescriptiveOffers: room.offers
               });
             }
           }
         }
         
-        // فقط أضف الفندق إذا كان لديه غرف بعروض وصفية
         if (hotelRoomsWithDescriptiveOffers.length > 0) {
             structuredOffersData.push({
                 hotelId: hotel._id,
@@ -229,9 +212,9 @@ export const getOffersData = async (req, res, next) => {
                 hotelDistance: hotel.distance,
                 hotelCheapestPrice: hotel.cheapestPrice,
                 hotelCity: hotel.city,
-                offerKind: hotelOfferKind, // نوع العرض الرئيسي من الفندق
-                hotelOffers: hotel.offers, // كل العروض الوصفية اللي على الفندق (لو فيه)
-                roomsWithDescriptiveOffers: hotelRoomsWithDescriptiveOffers // الغرف اللي عليها عروض وصفية من هذا الفندق
+                offerKind: hotelOfferKind,
+                hotelOffers: hotel.offers, 
+                roomsWithDescriptiveOffers: hotelRoomsWithDescriptiveOffers
             });
         }
       }
@@ -245,7 +228,7 @@ export const getOffersData = async (req, res, next) => {
 };
 
 export const getHotelsByType = async (req, res, next) => {
-  const { type } = req.params; // Extract 'type' from request parameters
+  const { type } = req.params; 
 
   try {
     // Find hotels that match the specified type
@@ -272,8 +255,8 @@ export const createPaymentIntent = async (req, res, next) => {
 
   try {
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: req.body.amount * 100, // Stripe بيحسب بالـ "سنت"، فلازم نضرب في 100
-      currency: "usd", // أو "egp" حسب ما تحبي
+      amount: req.body.amount * 100, 
+      currency: "usd",
       automatic_payment_methods: { enabled: true },
     });
 
