@@ -27,7 +27,11 @@ mongoose.connection.on("disconnected", () => {
   console.log("mongoDB disconnected!");
 });
 
-connect();
+// connect();
+app.use(async (req, res, next) => {
+  await connect();
+  next();
+});
 
 //middlewares
 app.use(cors({
