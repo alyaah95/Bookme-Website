@@ -60,7 +60,8 @@ const NewHotel = () => {
           const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
           const uploadRes = await axios.post(
             `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-            data
+            data,
+            { withCredentials: false }
           );
 
           return uploadRes.data.url;
@@ -95,7 +96,10 @@ const NewHotel = () => {
       });
       document.getElementById("rooms").selectedIndex = -1;
     } catch (err) {
-      console.log(err);
+      console.error("Upload error details:", err.response ? err.response.data : err);
+      setErrorMessage(
+        err.response?.data?.error?.message || "Failed to upload image or add hotel."
+      );
     }
     finally {
       setLoading(false);
