@@ -7,6 +7,7 @@ import { hotelInputs } from "../../formSource";
 import "./newHotel.scss";
 import API from "../../api/axiosInstance";
 
+
 const NewHotel = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -51,11 +52,17 @@ const NewHotel = () => {
         Object.values(files).map(async (file) => {
           const data = new FormData();
           data.append("file", file);
-          data.append("upload_preset", "upload");
+          data.append(
+            "upload_preset",
+            process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET
+          );
+
+          const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
           const uploadRes = await axios.post(
-            "https://api.cloudinary.com/v1_1/dqfvmwrye/image/upload",
+            `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
             data
           );
+
           return uploadRes.data.url;
         })
       );
