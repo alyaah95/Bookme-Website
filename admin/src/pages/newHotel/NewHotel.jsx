@@ -94,7 +94,6 @@ const NewHotel = () => {
       hotelInputs.forEach((input) => {
         document.getElementById(input.id).value = "";
       });
-      document.getElementById("rooms").selectedIndex = -1;
     } catch (err) {
       console.error("Upload error details:", err.response ? err.response.data : err);
       setErrorMessage(
