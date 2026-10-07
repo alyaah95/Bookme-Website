@@ -119,7 +119,7 @@ const UpdateModal = ({ setOpen, type, item, id }) => {
           )}
 
           <button className="updateBtn" onClick={handleUpdate}>Save Changes</button>
-          {hasBookings && <p className="warningMsg">⚠️ Some fields are locked due to active bookings.</p>}
+          {hasBookings && <p className="warningMsg">Some fields are locked due to active bookings.</p>}
         </form>
       </div>
     </div>
