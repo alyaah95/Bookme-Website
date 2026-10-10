@@ -732,6 +732,11 @@
   margin-top: var(--spacing-md);
 }
 
+.booking-form .date {
+  position: static;
+  margin-top: var(--spacing-sm);
+}
+
 .availability-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 32px rgba(79, 195, 247, 0.35);
